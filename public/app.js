@@ -151,17 +151,6 @@ function setupEventListeners() {
   const disconnectCloudBtn = $('disconnect-cloud-btn');
   if (disconnectCloudBtn) disconnectCloudBtn.addEventListener('click', handleDisconnectCloud);
 
-  document.querySelectorAll('.settings-cat-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const tab = el.getAttribute('data-settings-tab');
-      document.querySelectorAll('.settings-cat-item').forEach(item => item.classList.remove('active'));
-      document.querySelectorAll('.settings-tab-panel').forEach(panel => panel.classList.remove('active'));
-      el.classList.add('active');
-      const targetPanel = $(`settings-panel-${tab}`);
-      if (targetPanel) targetPanel.classList.add('active');
-    });
-  });
-
   // ── Add File ────────────────────────────────────────────────────
   if (addFileBtn) {
     addFileBtn.addEventListener('click', async () => {
@@ -503,7 +492,7 @@ function switchView(view) {
     dashboard: 'Vault Overview',
     hidden:    'Hidden Items',
     logs:      'Security Audit Logs',
-    settings:  'Settings'
+    settings:  'GitHub Sync'
   };
 
   if (dashContent)     dashContent.style.display     = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
