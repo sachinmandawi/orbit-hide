@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbit Hide — Hide &amp; Protect</title>
+
+  <!-- Anti-flicker: Apply authenticated state before CSS loads -->
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('orbit_hide_authenticated') === 'true') {
+          document.documentElement.classList.add('is-authenticated');
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       AUTH SCREEN
+       ═══════════════════════════════════════════════════════ -->
+  <div id="auth-screen" class="auth-screen-wrapper">
+    <div class="auth-card-box">
+
+      <div class="auth-brand-header">
+        <img src="logo.png" class="auth-brand-logo-img" alt="Orbit Hide Logo">
+        <h2 class="auth-brand-title" id="auth-screen-title">Sign In to Orbit Hide</h2>
+        <p class="auth-brand-subtitle" id="auth-screen-desc">Enter master key to unlock your local security vault.</p>
+      </div>
+
+
+      <!-- Auth Form -->
+      <div class="auth-form-body" id="auth-form-body">
+        <div class="form-group" id="pwd-input-group">
+          <label class="form-label" for="auth-password-input">Master Key</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="auth-password-input" class="form-input"
+                   placeholder="••••••••" autocomplete="current-password" autofocus>
+            <button id="toggle-pwd-visibility-btn" class="pwd-eye-btn" type="button"
+                    title="Toggle password visibility">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm field — shown only in Create mode -->
+        <div class="form-group" id="confirm-pwd-group" style="display:none;">
+          <label class="form-label" for="auth-confirm-input">Confirm Master Key</label>
+          <input type="password" id="auth-confirm-input" class="form-input"
+                 placeholder="••••••••" autocomplete="new-password">
+        </div>
+
+        <!-- Security Questions Setup — shown in Create mode -->
+        <div id="security-questions-setup-group" style="display:none; margin-top: 10px;">
+          <div class="form-group">
+            <label class="form-label">Security Question 1</label>
+            <select id="q1-select" class="form-input" style="background:var(--bg-input); color:var(--text-primary); margin-bottom: 6px;">
+              <option value="What was the name of your first school?">What was the name of your first school?</option>
+              <option value="What is your childhood nickname?">What is your childhood nickname?</option>
+              <option value="What is your favorite pet name?">What is your favorite pet name?</option>
+            </select>
+            <input type="text" id="a1-input" class="form-input" placeholder="Your Answer 1">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Security Question 2</label>
+            <select id="q2-select" class="form-input" style="background:var(--bg-input); color:var(--text-primary); margin-bottom: 6px;">
+              <option value="What is the name of your favorite movie?">What is the name of your favorite movie?</option>
+              <option value="What city were you born in?">What city were you born in?</option>
+              <option value="What is your favorite food or dish?">What is your favorite food or dish?</option>
+            </select>
+            <input type="text" id="a2-input" class="form-input" placeholder="Your Answer 2">
+          </div>
+        </div>
+
+        <button class="btn btn-primary auth-submit-btn" id="auth-submit-btn" type="button">
+          Sign In &amp; Unlock Vault
+        </button>
+
+        <!-- Forgot Master Key link -->
+        <div id="forgot-pwd-link-container" style="text-align: center; margin-top: 12px;">
+          <a href="#" id="forgot-pwd-link" style="color: var(--notion-blue); font-size: 12px; text-decoration: none;">Forgot Master Key?</a>
+        </div>
+      </div>
+
+      <!-- ── Password Recovery Form ────────────────────────────── -->
+      <div class="auth-form-body" id="recovery-form-body" style="display:none;">
+        <div class="form-group">
+          <label class="form-label" id="rec-q1-label">Question 1</label>
+          <input type="text" id="rec-a1-input" class="form-input" placeholder="Answer 1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" id="rec-q2-label">Question 2</label>
+          <input type="text" id="rec-a2-input" class="form-input" placeholder="Answer 2">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rec-new-pwd-input">New Master Key</label>
+          <input type="password" id="rec-new-pwd-input" class="form-input" placeholder="••••••••">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="rec-confirm-pwd-input">Confirm New Master Key</label>
+          <input type="password" id="rec-confirm-pwd-input" class="form-input" placeholder="••••••••">
+        </div>
+
+        <button class="btn btn-primary auth-submit-btn" id="recovery-submit-btn" type="button" style="margin-top: 8px;">
+          Reset Master Key &amp; Unlock
+        </button>
+
+        <div style="text-align: center; margin-top: 10px;">
+          <a href="#" id="back-to-signin-link" style="color: var(--text-secondary); font-size: 12px; text-decoration: none;">← Back to Sign In</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       MAIN APP — shown only when authenticated
+       ═══════════════════════════════════════════════════════ -->
+  <div id="main-app-screen" class="app-container">
+
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-header">
+        <div class="workspace-switcher" title="Orbit Hide Security Workspace">
+          <img src="logo.png" class="sidebar-brand-logo-img" alt="Orbit Hide">
+          <span class="sidebar-title">Orbit Hide</span>
+        </div>
+        <!-- Collapse button -->
+        <button class="icon-toggle-btn" id="collapse-sidebar-btn" title="Collapse sidebar (Ctrl+\)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- Vault Spaces -->
+        <div class="nav-section-header">
+          <span class="nav-section-title">Vault Spaces</span>
+        </div>
+
+        <div class="nav-item active" data-view="dashboard" id="nav-dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+          <span class="nav-item-label">Vault Overview</span>
+          <span class="nav-count-badge" id="nav-count-total">0</span>
+        </div>
+
+        <div class="nav-item" data-view="hidden" id="nav-hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8
+                     a18.45 18.45 0 0 1 5.06-5.94
+                     M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8
+                     a18.5 18.5 0 0 1-2.16 3.19
+                     m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+          <span class="nav-item-label">Hidden Items</span>
+          <span class="nav-count-badge badge-amber-dot" id="nav-count-hidden">0</span>
+        </div>
+
+        <!-- System & Security -->
+        <div class="nav-section-header" style="margin-top:10px;">
+          <span class="nav-section-title">System &amp; Security</span>
+        </div>
+
+        <div class="nav-item" data-view="logs" id="nav-logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span class="nav-item-label">Security Audit Logs</span>
+        </div>
+      </nav>
+
+      <div class="sidebar-bottom-profile">
+        <button id="logout-btn" class="logout-account-btn" title="Lock Vault &amp; Logout">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Logout Account</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ─────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- Header Bar -->
+      <header class="header-bar">
+        <div class="header-left">
+          <!-- Expand button -->
+          <button class="icon-toggle-btn" id="expand-sidebar-btn" title="Show sidebar (Ctrl+\)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+            </svg>
+          </button>
+
+          <!-- Search -->
+          <div class="search-input-wrapper">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" class="search-input"
+                   placeholder="Search vault… (Ctrl+K)">
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Add File -->
+          <button class="btn btn-primary" id="add-file-btn"
+                  title="Add any file to hide/protect">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.2">
+              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+              <polyline points="13 2 13 9 20 9"></polyline>
+            </svg>
+            <span>Add File</span>
+          </button>
+
+          <!-- Add Folder -->
+          <button class="btn btn-secondary" id="add-folder-btn"
+                  title="Add any folder to hide/protect">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="#2eaadc" stroke-width="2.2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Add Folder</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- View Area -->
+      <div class="view-area">
+
+        <!-- ── Dashboard / Hidden views ─────────────── -->
+        <div id="view-dashboard-content">
+          <div class="page-title-row">
+            <h1 class="page-heading" id="view-heading">Vault Overview</h1>
+          </div>
+
+          <div class="smart-tip-banner" id="smart-tip-banner">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:15px;">💡</span>
+              <span><strong>Smart Tip:</strong> Right-click any file/folder in Windows Explorer and select <strong>"Hide with Orbit Hide"</strong> to hide items silently in background!</span>
+            </div>
+            <button class="icon-toggle-btn" onclick="document.getElementById('smart-tip-banner').style.display='none'" title="Dismiss tip">✕</button>
+          </div>
+
+          <div class="notion-table-container">
+            <table class="notion-table">
+              <colgroup>
+                <col style="width:25%">
+                <col style="width:40%">
+                <col style="width:15%">
+                <col style="width:20%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Path</th>
+                  <th>Visibility</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vault-items-tbody"></tbody>
+            </table>
+
+            <div class="empty-state" id="empty-state-msg" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                <line x1="1" y1="1" x2="23" y2="23"></line>
+              </svg>
+              <div>Your vault list is empty.<br>Click <strong>Add File</strong> or <strong>Add Folder</strong> to get started.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Audit Logs view ──────────────────────────────── -->
+        <div id="view-logs-content" style="display:none;">
+          <div class="page-title-row">
+            <h1 class="page-heading">Security Audit Logs</h1>
+          </div>
+          <div class="notion-table-container">
+            <table class="notion-table">
+              <colgroup>
+                <col style="width:20%">
+                <col style="width:22%">
+                <col style="width:43%">
+                <col style="width:15%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                  <th>Target Path</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="logs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /view-area -->
+    </main>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

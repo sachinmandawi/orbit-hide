@@ -1,0 +1,724 @@
+/* ============================================================
+   Orbit Hide — Complete CSS  (Deep Audit v3 — All bugs fixed)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg-primary:   #191919;
+  --bg-sidebar:   #202020;
+  --bg-card:      #222222;
+  --bg-hover:     #2c2c2c;
+  --bg-active:    #323232;
+  --bg-input:     #252525;
+  --border-color: #2b2b2b;
+  --border-hover: #3a3a3a;
+
+  --text-primary:   #e3e3e3;
+  --text-secondary: #a0a0a0;
+  --text-muted:     #6e6e6e;
+
+  --notion-blue:      #2eaadc;
+  --notion-blue-hover:#0081b5;
+  --notion-red:       #eb5757;
+  --notion-red-bg:    rgba(235,87,87,0.15);
+  --notion-amber:     #d97706;
+  --notion-amber-bg:  rgba(217,119,6,0.15);
+  --notion-green:     #27ae60;
+  --notion-green-bg:  rgba(39,174,96,0.15);
+
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --shadow:      0 6px 16px rgba(0,0,0,0.5);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+
+
+/* ── Smart Tip Banner ───────────────────────────────────────── */
+.smart-tip-banner {
+  background: rgba(46, 170, 220, 0.08);
+  border: 1px solid rgba(46, 170, 220, 0.25);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ── Auth / App visibility (anti-flicker) ──────────────────── */
+html.is-authenticated  #auth-screen     { display: none  !important; }
+html.is-authenticated  #main-app-screen { display: flex  !important; }
+html:not(.is-authenticated) #auth-screen     { display: flex  !important; }
+html:not(.is-authenticated) #main-app-screen { display: none  !important; }
+
+/* ════════════════════════════════════════════════════════════
+   AUTH SCREEN
+   ════════════════════════════════════════════════════════════ */
+.auth-screen-wrapper {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-primary);
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.auth-card-box {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  width: 380px;
+  padding: 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-brand-header {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.auth-brand-logo-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin: 0 auto 12px;
+  display: block;
+}
+
+.auth-brand-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.auth-brand-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Auth Tabs (Hidden per user request) */
+.auth-tabs {
+  display: none !important;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 6px;
+  font-size: 12.5px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.1s ease;
+}
+.auth-tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Auth Form */
+.auth-form-body { display: flex; flex-direction: column; }
+.form-group { margin-bottom: 12px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.form-input {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  height: 36px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--notion-blue);
+  box-shadow: 0 0 0 2px rgba(46,170,220,0.2);
+}
+
+.pwd-eye-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.1s ease;
+}
+.pwd-eye-btn:hover { color: var(--text-primary); }
+
+.auth-submit-btn {
+  width: 100%;
+  height: 36px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   APP LAYOUT
+   ════════════════════════════════════════════════════════════ */
+.app-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+.sidebar {
+  width: 250px;
+  min-width: 250px;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.22s cubic-bezier(0.4,0,0.2,1),
+              min-width 0.22s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.22s ease;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-header {
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border-color);
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.workspace-switcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  overflow: hidden;
+}
+
+.sidebar-brand-logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Collapse button */
+.icon-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.1s ease;
+}
+.icon-toggle-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+.icon-toggle-btn svg { width: 14px; height: 14px; }
+
+/* Expand sidebar button — hidden by default, JS sets display:flex */
+#expand-sidebar-btn { display: none; }
+
+/* Sidebar Nav */
+.sidebar-nav {
+  padding: 10px 8px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-section-header { padding: 8px 8px 4px; }
+.nav-section-title {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13.5px;
+  height: 34px;
+  transition: all 0.1s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.nav-item:hover  { background-color: var(--bg-hover);   color: var(--text-primary); }
+.nav-item.active { background-color: var(--bg-active);  color: var(--text-primary); font-weight: 500; }
+.nav-item svg    { width: 16px; height: 16px; opacity: 0.85; flex-shrink: 0; }
+
+.nav-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-count-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  min-width: 18px;
+  text-align: center;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-red-dot   { color: var(--notion-red);   background: rgba(235,87,87,0.12); }
+.badge-amber-dot { color: var(--notion-amber); background: rgba(217,119,6,0.12); }
+
+/* Sidebar Footer */
+.sidebar-bottom-profile {
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.logout-account-btn {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: rgba(235,87,87,0.08);
+  border: 1px solid rgba(235,87,87,0.35);
+  border-radius: var(--radius-md);
+  color: var(--notion-red);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.logout-account-btn:hover {
+  background: rgba(235,87,87,0.2);
+  border-color: rgba(235,87,87,0.75);
+  color: #fff;
+}
+
+/* ── Main Content ────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  min-width: 0;   /* prevent flex overflow */
+}
+
+/* Header Bar */
+.header-bar {
+  height: 48px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Search */
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-input-wrapper svg {
+  position: absolute;
+  left: 8px;
+  width: 13px;
+  height: 13px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-input {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px 4px 26px;
+  color: var(--text-primary);
+  font-size: 13px;
+  width: 200px;
+  height: 32px;
+  transition: border-color 0.15s, background-color 0.15s, width 0.15s;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--notion-blue);
+  background-color: var(--bg-card);
+  width: 250px;
+}
+.search-input::placeholder { color: var(--text-muted); }
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  height: 32px;
+  transition: all 0.1s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--notion-blue);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) { background-color: var(--notion-blue-hover); }
+
+.btn-secondary {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+.btn-secondary:hover:not(:disabled) { background-color: var(--bg-hover); }
+
+.btn-danger {
+  background-color: var(--notion-red-bg);
+  color: var(--notion-red);
+  border-color: rgba(235,87,87,0.2);
+}
+.btn-danger:hover:not(:disabled) { background-color: rgba(235,87,87,0.25); }
+
+.btn-unlock {
+  background-color: var(--notion-green-bg);
+  color: var(--notion-green);
+  border-color: rgba(39,174,96,0.25);
+}
+.btn-unlock:hover:not(:disabled) { background-color: rgba(39,174,96,0.28); }
+
+.btn-sm {
+  padding: 2px 8px;
+  font-size: 12px;
+  height: 26px;
+}
+
+.btn-remove { color: var(--text-muted) !important; }
+.btn-remove:hover:not(:disabled) { color: var(--notion-red) !important; background: var(--notion-red-bg) !important; }
+
+/* ── View Area ─────────────────────────────────────────────── */
+.view-area {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.page-title-row { margin-bottom: 14px; }
+.page-heading {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #fff;
+}
+
+/* ── Notion Table ───────────────────────────────────────────── */
+.notion-table-container {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.notion-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  table-layout: fixed;   /* prevents column jumping */
+}
+
+.notion-table th {
+  background-color: var(--bg-sidebar);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  height: 34px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notion-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  height: 44px;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.notion-table tr:last-child td { border-bottom: none; }
+.notion-table tbody tr:hover   { background-color: var(--bg-hover); }
+
+/* Table Cell Helpers */
+.table-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  overflow: hidden;
+}
+.table-name-cell span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge-cell {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.actions-cell {
+  text-align: right;
+}
+.actions-cell-inner {
+  display: inline-flex;
+  gap: 5px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.badge-locked   { background-color: var(--notion-red-bg);   color: var(--notion-red);   }
+.badge-hidden   { background-color: var(--notion-amber-bg); color: var(--notion-amber); }
+.badge-unlocked { background-color: var(--notion-green-bg); color: var(--notion-green); }
+
+/* ── Nav Badges ─────────────────────────────────────────────── */
+.nav-count-badge {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  min-width: 18px;
+  text-align: center;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Path Code ─────────────────────────────────────────────── */
+.path-code {
+  font-family: 'Courier New', Consolas, monospace;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background-color: var(--bg-input);
+  padding: 2px 7px;
+  border-radius: 3px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1.5;
+}
+
+/* ── Empty State ────────────────────────────────────────────── */
+.empty-state {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+}
+.empty-state svg { width: 40px; height: 40px; opacity: 0.35; margin-bottom: 4px; }
+.empty-state strong { color: var(--text-secondary); }
+
+/* ── Toast Notifications ─────────────────────────────────────── */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+.toast {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--notion-blue);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow);
+  max-width: 340px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: auto;
+  word-break: break-word;
+}
+.toast-error { border-left-color: var(--notion-red);   }
+.toast-info  { border-left-color: var(--notion-amber); }
+
+/* ── Dropdown (unused but kept for safety) ──────────────────── */
+.add-item-menu-container { position: relative; display: inline-block; }
+.add-item-dropdown {
+  position: absolute;
+  top: 38px; right: 0;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  width: 140px;
+  padding: 4px;
+  z-index: 1000;
+}
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+.dropdown-option:hover { background-color: var(--bg-hover); }
