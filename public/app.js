@@ -917,22 +917,23 @@ function setActionBtnsDisabled(id, disabled) {
 function showToast(msg, type = 'success') {
   if (!toastContainer) return;
 
-  const icons = { success: '✅', error: '⚠️', info: 'ℹ️' };
-  const icon  = icons[type] || '✅';
+  const dots = {
+    success: '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.5);display:inline-block;flex-shrink:0;"></span>',
+    error:   '<span style="width:7px;height:7px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5);display:inline-block;flex-shrink:0;"></span>',
+    info:    '<span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5);display:inline-block;flex-shrink:0;"></span>'
+  };
+  const dot = dots[type] || dots.success;
 
   const toast = document.createElement('div');
-  toast.className = 'toast' + (type === 'error' ? ' toast-error' : (type === 'info' ? ' toast-info' : ''));
-  toast.innerHTML = `
-    <span style="font-size:15px;flex-shrink:0;">${icon}</span>
-    <span>${esc(msg)}</span>
-  `;
+  toast.className = 'toast' + (type === 'error' ? ' toast-error' : (type === 'info' ? ' toast-info' : ' toast-success'));
+  toast.innerHTML = `${dot}<span>${esc(msg)}</span>`;
   toastContainer.appendChild(toast);
 
   setTimeout(() => {
     toast.style.opacity   = '0';
-    toast.style.transform = 'translateY(8px)';
-    setTimeout(() => { try { toast.remove(); } catch (_) {} }, 280);
-  }, 3500);
+    toast.style.transform = 'translateY(10px) scale(0.95)';
+    setTimeout(() => { try { toast.remove(); } catch (_) {} }, 220);
+  }, 2800);
 }
 
 function esc(str) {
