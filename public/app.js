@@ -151,6 +151,27 @@ function setupEventListeners() {
   const disconnectCloudBtn = $('disconnect-cloud-btn');
   if (disconnectCloudBtn) disconnectCloudBtn.addEventListener('click', handleDisconnectCloud);
 
+  setupSubcatTabs();
+
+// ── Settings Subcategory Tabs ────────────────────────────────────
+function setupSubcatTabs() {
+  document.querySelectorAll('.subcat-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const subcat = btn.getAttribute('data-subcat');
+      document.querySelectorAll('.subcat-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const panelGithub   = $('panel-github-sync');
+      const panelSecurity = $('panel-security');
+      const panelGeneral  = $('panel-general');
+
+      if (panelGithub)   panelGithub.style.display   = (subcat === 'github-sync') ? 'block' : 'none';
+      if (panelSecurity) panelSecurity.style.display = (subcat === 'security') ? 'block' : 'none';
+      if (panelGeneral)  panelGeneral.style.display  = (subcat === 'general') ? 'block' : 'none';
+    });
+  });
+}
+
   // ── Add File ────────────────────────────────────────────────────
   if (addFileBtn) {
     addFileBtn.addEventListener('click', async () => {

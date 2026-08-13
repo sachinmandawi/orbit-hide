@@ -335,88 +335,186 @@
             <h1 class="page-heading">Settings</h1>
           </div>
 
-          <div class="settings-card-grid">
-            <!-- Cloud Sync Card -->
-            <div class="settings-card">
-              <div class="settings-card-header">
-                <div class="settings-icon-title">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
-                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
-                  </svg>
-                  <div>
-                    <h3 class="settings-card-title">GitHub Sync</h3>
-                    <p class="settings-card-desc">Automatically backup your encrypted vault to a private GitHub repository.</p>
+          <!-- Subcategory Navigation Bar -->
+          <div class="settings-subcat-bar">
+            <button class="subcat-tab-btn active" data-subcat="github-sync" id="subcat-github-sync">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+              </svg>
+              <span>GitHub Sync</span>
+            </button>
+
+            <button class="subcat-tab-btn" data-subcat="security" id="subcat-security">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Security &amp; Auth</span>
+            </button>
+
+            <button class="subcat-tab-btn" data-subcat="general" id="subcat-general">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>About &amp; Storage</span>
+            </button>
+          </div>
+
+          <div class="settings-subcat-panels">
+            <!-- 1. GitHub Sync Panel -->
+            <div class="subcat-panel active" id="panel-github-sync">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+                      <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                    </svg>
+                    <div>
+                      <h3 class="settings-card-title">GitHub Sync</h3>
+                      <p class="settings-card-desc">Enter your GitHub Personal Access Token to backup your encrypted vault to a private repository.</p>
+                    </div>
+                  </div>
+                  <div class="status-pill-badge" id="cloud-status-pill">
+                    <span class="status-dot-indicator red-dot" id="cloud-status-dot"></span>
+                    <span id="cloud-status-text">Disconnected</span>
                   </div>
                 </div>
-                <div class="status-pill-badge" id="cloud-status-pill">
-                  <span class="status-dot-indicator red-dot" id="cloud-status-dot"></span>
-                  <span id="cloud-status-text">Disconnected</span>
+
+                <div class="settings-card-body">
+                  <div class="form-group">
+                    <label class="form-label" for="github-token-input">GitHub Personal Access Token (PAT)</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                      <input type="password" id="github-token-input" class="form-input" placeholder="ghp_... or github_pat_..." autocomplete="off">
+                      <button id="toggle-token-visibility-btn" class="pwd-eye-btn" type="button" title="Toggle token visibility">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                    <p class="field-hint-text">Token requires <code>repo</code> scope to create &amp; sync private backups.</p>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="github-repo-input">Backup Repository Name</label>
+                    <input type="text" id="github-repo-input" class="form-input" value="orbit-hide-vault-backup" placeholder="orbit-hide-vault-backup">
+                    <p class="field-hint-text">If this private repository does not exist on your account, Orbit Hide will create it automatically.</p>
+                  </div>
+
+                  <div class="cloud-info-box" id="cloud-info-box" style="display:none;">
+                    <div class="info-row">
+                      <span class="info-label">Account Owner:</span>
+                      <strong id="cloud-owner-val">-</strong>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Backup Repository:</span>
+                      <a id="cloud-repo-link" href="#" target="_blank" class="repo-link-style">-</a>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Last Live Sync:</span>
+                      <span id="cloud-lastsync-val">Never</span>
+                    </div>
+                  </div>
+
+                  <div class="settings-actions-row">
+                    <button class="btn btn-primary" id="save-cloud-settings-btn">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                      </svg>
+                      <span>Connect &amp; Setup Cloud Sync</span>
+                    </button>
+
+                    <button class="btn btn-secondary" id="manual-sync-btn" style="display:none;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                      </svg>
+                      <span>Sync Now</span>
+                    </button>
+
+                    <button class="btn btn-secondary" id="restore-cloud-btn">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      <span>Restore Vault from Cloud</span>
+                    </button>
+
+                    <button class="btn btn-danger-link" id="disconnect-cloud-btn" style="display:none;">Disconnect</button>
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div class="settings-card-body">
-                <div class="form-group">
-                  <label class="form-label" for="github-token-input">GitHub Personal Access Token (PAT)</label>
-                  <div style="position: relative; display: flex; align-items: center;">
-                    <input type="password" id="github-token-input" class="form-input" placeholder="ghp_... or github_pat_..." autocomplete="off">
-                    <button id="toggle-token-visibility-btn" class="pwd-eye-btn" type="button" title="Toggle token visibility">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                  <p class="field-hint-text">Token requires <code>repo</code> scope to create &amp; sync private backups.</p>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label" for="github-repo-input">Backup Repository Name</label>
-                  <input type="text" id="github-repo-input" class="form-input" value="orbit-hide-vault-backup" placeholder="orbit-hide-vault-backup">
-                  <p class="field-hint-text">If this private repository does not exist on your account, Orbit Hide will create it automatically.</p>
-                </div>
-
-                <div class="cloud-info-box" id="cloud-info-box" style="display:none;">
-                  <div class="info-row">
-                    <span class="info-label">Account Owner:</span>
-                    <strong id="cloud-owner-val">-</strong>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">Backup Repository:</span>
-                    <a id="cloud-repo-link" href="#" target="_blank" class="repo-link-style">-</a>
-                  </div>
-                  <div class="info-row">
-                    <span class="info-label">Last Live Sync:</span>
-                    <span id="cloud-lastsync-val">Never</span>
+            <!-- 2. Security Panel -->
+            <div class="subcat-panel" id="panel-security" style="display:none;">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <div>
+                      <h3 class="settings-card-title">Security &amp; Recovery Settings</h3>
+                      <p class="settings-card-desc">Master Password hashing &amp; recovery security questions status.</p>
+                    </div>
                   </div>
                 </div>
+                <div class="settings-card-body">
+                  <div class="cloud-info-box" style="display:flex;">
+                    <div class="info-row">
+                      <span class="info-label">Encryption Standard:</span>
+                      <strong>PBKDF2 SHA-512 + AES-256-CBC</strong>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Recovery Q&amp;A Status:</span>
+                      <span style="color:#10b981;">Active (2 Recovery Questions Set)</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Local AppData Path:</span>
+                      <code>%APPDATA%\Orbit Hide\vault_db.json</code>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                <div class="settings-actions-row">
-                  <button class="btn btn-primary" id="save-cloud-settings-btn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                      <polyline points="7 3 7 8 15 8"></polyline>
+            <!-- 3. General Panel -->
+            <div class="subcat-panel" id="panel-general" style="display:none;">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <div class="settings-icon-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
                     </svg>
-                    <span>Connect &amp; Setup Cloud Sync</span>
-                  </button>
-
-                  <button class="btn btn-secondary" id="manual-sync-btn" style="display:none;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                    </svg>
-                    <span>Sync Now</span>
-                  </button>
-
-                  <button class="btn btn-secondary" id="restore-cloud-btn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    <span>Restore Vault from Cloud</span>
-                  </button>
-
-                  <button class="btn btn-danger-link" id="disconnect-cloud-btn" style="display:none;">Disconnect</button>
+                    <div>
+                      <h3 class="settings-card-title">About Orbit Hide</h3>
+                      <p class="settings-card-desc">Version 1.0.0 — Offline Security Vault with Pure Background Stealth.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="settings-card-body">
+                  <div class="cloud-info-box" style="display:flex;">
+                    <div class="info-row">
+                      <span class="info-label">App Name:</span>
+                      <strong>Orbit Hide</strong>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Version:</span>
+                      <strong>v1.0.0 (Official Build)</strong>
+                    </div>
+                    <div class="info-row">
+                      <span class="info-label">Context Menu Integration:</span>
+                      <span style="color:#10b981;">Hide with Orbit Hide (Registered in Registry)</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
