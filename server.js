@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const fs         = require('fs');
 const path       = require('path');
 const crypto     = require('crypto');
+const https      = require('https');
 const { exec }   = require('child_process');
 
 const app  = express();
@@ -42,6 +43,13 @@ const DEFAULT_DB = {
     q2:         null,
     a2Hash:     null
   },
+  cloud: {
+    enabled:     false,
+    githubToken: null,
+    repoName:    'orbit-hide-vault-backup',
+    owner:       null,
+    lastSync:    null
+  },
   items: [],
   logs:  []
 };
@@ -63,6 +71,16 @@ function readDB() {
     }
     if (!Array.isArray(db.items)) { db.items = []; migrated = true; }
     if (!Array.isArray(db.logs))  { db.logs  = []; migrated = true; }
+    if (!db.cloud) {
+      db.cloud = {
+        enabled:     false,
+        githubToken: null,
+        repoName:    'orbit-hide-vault-backup',
+        owner:       null,
+        lastSync:    null
+      };
+      migrated = true;
+    }
 
     if (migrated) writeDB(db);
     return db;
@@ -75,6 +93,9 @@ function readDB() {
 function writeDB(data) {
   try {
     fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+    if (data.cloud && data.cloud.enabled && data.cloud.githubToken && data.cloud.owner) {
+      triggerAutoCloudSync(data).catch(() => {});
+    }
   } catch (e) {
     console.error('[DB] write error:', e.message);
   }
@@ -443,6 +464,290 @@ app.get('/api/system/stats', (req, res) => {
     : Math.max(0, Math.round(100 - ((total - hidden) / total) * 50));
 
   res.json({ totalItems: total, hiddenItems: hidden, securityScore: score });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Encrypted GitHub Cloud Sync Helpers & Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+function githubApiRequest(method, urlPath, token, postData = null) {
+  return new Promise((resolve, reject) => {
+    const fullUrl = new URL(urlPath.startsWith('http') ? urlPath : `https://api.github.com${urlPath}`);
+    const headers = {
+      'User-Agent': 'Orbit-Hide-App',
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    };
+    let payloadString = null;
+    if (postData) {
+      payloadString = typeof postData === 'string' ? postData : JSON.stringify(postData);
+      headers['Content-Type'] = 'application/json';
+      headers['Content-Length'] = Buffer.byteLength(payloadString);
+    }
+
+    const req = https.request({
+      hostname: fullUrl.hostname,
+      path: fullUrl.pathname + fullUrl.search,
+      method: method,
+      headers: headers
+    }, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: JSON.parse(body || '{}') });
+        } catch (_) {
+          resolve({ status: res.statusCode, data: body });
+        }
+      });
+    });
+
+    req.on('error', reject);
+    if (payloadString) req.write(payloadString);
+    req.end();
+  });
+}
+
+function encryptPayload(text, secret) {
+  const iv = crypto.randomBytes(16);
+  const key = crypto.pbkdf2Sync(secret, 'orbit-hide-cloud-salt', 100000, 32, 'sha256');
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + ':' + encrypted;
+}
+
+function decryptPayload(encryptedHex, secret) {
+  const parts = encryptedHex.split(':');
+  if (parts.length !== 2) throw new Error('Invalid encrypted data format');
+  const iv = Buffer.from(parts[0], 'hex');
+  const key = crypto.pbkdf2Sync(secret, 'orbit-hide-cloud-salt', 100000, 32, 'sha256');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+  let decrypted = decipher.update(parts[1], 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+async function triggerAutoCloudSync(db) {
+  try {
+    if (!db.cloud || !db.cloud.enabled || !db.cloud.githubToken || !db.cloud.owner) return false;
+
+    const token = db.cloud.githubToken;
+    const owner = db.cloud.owner;
+    const repo  = db.cloud.repoName || 'orbit-hide-vault-backup';
+
+    // Check if vault_db.enc exists on repo to get sha
+    const fileRes = await githubApiRequest('GET', `/repos/${owner}/${repo}/contents/vault_db.enc`, token);
+    let sha = null;
+    if (fileRes.status === 200 && fileRes.data && fileRes.data.sha) {
+      sha = fileRes.data.sha;
+    }
+
+    // Strip sensitive token from upload copy
+    const dbCopy = JSON.parse(JSON.stringify(db));
+    if (dbCopy.cloud) {
+      delete dbCopy.cloud.githubToken;
+    }
+
+    const secretKey = db.auth.masterHash || 'orbit-hide-default';
+    const encryptedContent = encryptPayload(JSON.stringify(dbCopy), secretKey);
+    const base64Content = Buffer.from(encryptedContent, 'utf8').toString('base64');
+
+    const commitMsg = `Vault Backup: ${new Date().toLocaleString()}`;
+    const payload = {
+      message: commitMsg,
+      content: base64Content
+    };
+    if (sha) payload.sha = sha;
+
+    const uploadRes = await githubApiRequest('PUT', `/repos/${owner}/${repo}/contents/vault_db.enc`, token, payload);
+    if (uploadRes.status === 200 || uploadRes.status === 201) {
+      db.cloud.lastSync = new Date().toISOString();
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+      console.log(`[Cloud Sync] Vault database backed up to GitHub Private Repo (${owner}/${repo}) ✓`);
+      return true;
+    } else {
+      console.error('[Cloud Sync] Upload failed:', uploadRes.status, uploadRes.data);
+      return false;
+    }
+  } catch (err) {
+    console.error('[Cloud Sync Error]:', err.message);
+    return false;
+  }
+}
+
+app.get('/api/cloud/status', (req, res) => {
+  const db = readDB();
+  const c = db.cloud || {};
+  res.json({
+    enabled: !!c.enabled,
+    owner: c.owner || null,
+    repoName: c.repoName || 'orbit-hide-vault-backup',
+    lastSync: c.lastSync || null,
+    hasToken: !!c.githubToken
+  });
+});
+
+app.post('/api/cloud/connect', async (req, res) => {
+  const { token, repoName } = req.body;
+  if (!token) return res.status(400).json({ error: 'GitHub Personal Access Token is required.' });
+
+  const targetRepo = (repoName || 'orbit-hide-vault-backup').trim();
+
+  try {
+    // 1. Verify token & get user info
+    const userRes = await githubApiRequest('GET', '/user', token);
+    if (userRes.status !== 200 || !userRes.data || !userRes.data.login) {
+      return res.status(401).json({ error: 'Invalid GitHub Token or token expired.' });
+    }
+
+    const owner = userRes.data.login;
+
+    // 2. Check if repo exists
+    const repoCheck = await githubApiRequest('GET', `/repos/${owner}/${targetRepo}`, token);
+    if (repoCheck.status === 404) {
+      // Create Private Repository
+      console.log(`Creating Private Repository ${owner}/${targetRepo}...`);
+      const createRes = await githubApiRequest('POST', '/user/repos', token, {
+        name: targetRepo,
+        private: true,
+        description: 'Orbit Hide Encrypted Vault Backup'
+      });
+
+      if (createRes.status !== 201) {
+        return res.status(500).json({ error: `Failed to create private repository ${targetRepo} on GitHub.` });
+      }
+      console.log(`Private Repository ${owner}/${targetRepo} created successfully! ✓`);
+    } else if (repoCheck.status !== 200) {
+      return res.status(500).json({ error: `GitHub API error: Status ${repoCheck.status}` });
+    }
+
+    // 3. Save cloud config
+    const db = readDB();
+    db.cloud = {
+      enabled: true,
+      githubToken: token,
+      repoName: targetRepo,
+      owner: owner,
+      lastSync: null
+    };
+    writeDB(db);
+
+    // 4. Trigger initial backup
+    const syncSuccess = await triggerAutoCloudSync(db);
+
+    res.json({
+      success: true,
+      owner: owner,
+      repoName: targetRepo,
+      lastSync: db.cloud.lastSync,
+      initialSync: syncSuccess
+    });
+  } catch (err) {
+    console.error('[Cloud Connect Error]:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/cloud/sync', async (req, res) => {
+  const db = readDB();
+  if (!db.cloud || !db.cloud.enabled || !db.cloud.githubToken) {
+    return res.status(400).json({ error: 'Cloud Sync is not connected.' });
+  }
+
+  const success = await triggerAutoCloudSync(db);
+  if (success) {
+    res.json({ success: true, lastSync: db.cloud.lastSync });
+  } else {
+    res.status(500).json({ error: 'Failed to sync vault to GitHub.' });
+  }
+});
+
+app.post('/api/cloud/restore', async (req, res) => {
+  const { token, repoName, masterPassword } = req.body;
+
+  const db = readDB();
+  const targetToken = token || (db.cloud && db.cloud.githubToken);
+  const targetRepo  = repoName || (db.cloud && db.cloud.repoName) || 'orbit-hide-vault-backup';
+
+  if (!targetToken) {
+    return res.status(400).json({ error: 'GitHub Token required for cloud restore.' });
+  }
+
+  try {
+    // Get user login
+    const userRes = await githubApiRequest('GET', '/user', targetToken);
+    if (userRes.status !== 200 || !userRes.data || !userRes.data.login) {
+      return res.status(401).json({ error: 'Invalid GitHub Token.' });
+    }
+
+    const owner = userRes.data.login;
+
+    // Fetch vault_db.enc from GitHub
+    const fileRes = await githubApiRequest('GET', `/repos/${owner}/${targetRepo}/contents/vault_db.enc`, targetToken);
+    if (fileRes.status !== 200 || !fileRes.data || !fileRes.data.content) {
+      return res.status(404).json({ error: `Encrypted vault_db.enc backup file not found in ${owner}/${targetRepo}.` });
+    }
+
+    const encryptedText = Buffer.from(fileRes.data.content, 'base64').toString('utf8');
+
+    // Key selection: use current masterHash or derive from masterPassword if given
+    let secretKey = db.auth.masterHash;
+    if (masterPassword && db.auth.salt) {
+      secretKey = crypto.pbkdf2Sync(masterPassword, db.auth.salt, 100000, 64, 'sha512').toString('hex');
+    }
+
+    if (!secretKey) {
+      return res.status(400).json({ error: 'Master password required to decrypt cloud backup.' });
+    }
+
+    let decryptedDbStr;
+    try {
+      decryptedDbStr = decryptPayload(encryptedText, secretKey);
+    } catch (_) {
+      return res.status(401).json({ error: 'Failed to decrypt backup. Incorrect Master Password or corrupted backup.' });
+    }
+
+    const restoredDb = JSON.parse(decryptedDbStr);
+
+    // Merge restored items into local DB
+    if (Array.isArray(restoredDb.items)) {
+      for (const restoredItem of restoredDb.items) {
+        const idx = db.items.findIndex(i => i.id === restoredItem.id || i.itemPath === restoredItem.itemPath);
+        if (idx === -1) {
+          db.items.push(restoredItem);
+        } else {
+          db.items[idx] = restoredItem;
+        }
+      }
+    }
+
+    db.cloud.enabled = true;
+    db.cloud.githubToken = targetToken;
+    db.cloud.owner = owner;
+    db.cloud.repoName = targetRepo;
+    db.cloud.lastSync = new Date().toISOString();
+
+    addLog(db, 'CLOUD_RESTORE', `Restored from ${owner}/${targetRepo}`, true);
+    writeDB(db);
+
+    res.json({ success: true, restoredItemsCount: restoredDb.items ? restoredDb.items.length : 0 });
+  } catch (err) {
+    console.error('[Cloud Restore Error]:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/cloud/disconnect', (req, res) => {
+  const db = readDB();
+  db.cloud = {
+    enabled: false,
+    githubToken: null,
+    repoName: 'orbit-hide-vault-backup',
+    owner: null,
+    lastSync: null
+  };
+  writeDB(db);
+  res.json({ success: true });
 });
 
 const server = app.listen(PORT, () => {

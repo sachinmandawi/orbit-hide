@@ -129,6 +129,31 @@ function setupEventListeners() {
   if (authSubmitBtn)     authSubmitBtn.addEventListener('click', handleAuthSubmit);
   if (recoverySubmitBtn) recoverySubmitBtn.addEventListener('click', handleRecoverySubmit);
 
+  const openSettingsBtn = $('open-settings-btn');
+  if (openSettingsBtn) openSettingsBtn.addEventListener('click', () => switchView('settings'));
+
+  const toggleTokenBtn = $('toggle-token-visibility-btn');
+  const tokenInput    = $('github-token-input');
+  if (toggleTokenBtn && tokenInput) {
+    toggleTokenBtn.addEventListener('click', () => {
+      const show = tokenInput.type === 'password';
+      tokenInput.type = show ? 'text' : 'password';
+      toggleTokenBtn.style.color = show ? 'var(--notion-blue)' : '';
+    });
+  }
+
+  const saveCloudBtn = $('save-cloud-settings-btn');
+  if (saveCloudBtn) saveCloudBtn.addEventListener('click', handleSaveCloudSettings);
+
+  const manualSyncBtn = $('manual-sync-btn');
+  if (manualSyncBtn) manualSyncBtn.addEventListener('click', handleManualSync);
+
+  const restoreCloudBtn = $('restore-cloud-btn');
+  if (restoreCloudBtn) restoreCloudBtn.addEventListener('click', handleRestoreCloud);
+
+  const disconnectCloudBtn = $('disconnect-cloud-btn');
+  if (disconnectCloudBtn) disconnectCloudBtn.addEventListener('click', handleDisconnectCloud);
+
   // ── Add File ────────────────────────────────────────────────────
   if (addFileBtn) {
     addFileBtn.addEventListener('click', async () => {
@@ -461,26 +486,190 @@ function switchView(view) {
     el.classList.toggle('active', el.getAttribute('data-view') === view);
   });
 
-  const dashContent = $('view-dashboard-content');
-  const logsContent = $('view-logs-content');
-  const heading     = $('view-heading');
+  const dashContent     = $('view-dashboard-content');
+  const logsContent     = $('view-logs-content');
+  const settingsContent = $('view-settings-content');
+  const heading         = $('view-heading');
 
   const labels = {
     dashboard: 'Vault Overview',
     hidden:    'Hidden Items',
-    logs:      'Security Audit Logs'
+    logs:      'Security Audit Logs',
+    settings:  'Cloud Sync & Settings'
   };
 
-  if (view === 'logs') {
-    if (dashContent) dashContent.style.display = 'none';
-    if (logsContent) logsContent.style.display = 'block';
-  } else {
-    if (dashContent) dashContent.style.display = 'block';
-    if (logsContent) logsContent.style.display = 'none';
+  if (dashContent)     dashContent.style.display     = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
+  if (logsContent)     logsContent.style.display     = (view === 'logs') ? 'block' : 'none';
+  if (settingsContent) settingsContent.style.display = (view === 'settings') ? 'block' : 'none';
+
+  if (heading && labels[view]) heading.textContent = labels[view];
+
+  if (view === 'settings') {
+    loadCloudStatus();
   }
 
-  if (heading) heading.textContent = labels[view] || 'Vault Overview';
   renderVaultItems();
+}
+
+// ── Cloud Sync Controllers ─────────────────────────────────────────
+async function loadCloudStatus() {
+  try {
+    const res = await fetch('/api/cloud/status');
+    const data = await res.json();
+
+    const pillDot    = $('cloud-status-dot');
+    const pillText   = $('cloud-status-text');
+    const infoBox    = $('cloud-info-box');
+    const ownerVal   = $('cloud-owner-val');
+    const repoLink   = $('cloud-repo-link');
+    const lastSync   = $('cloud-lastsync-val');
+    const manualBtn  = $('manual-sync-btn');
+    const disconnect = $('disconnect-cloud-btn');
+    const tokenInput = $('github-token-input');
+    const repoInput  = $('github-repo-input');
+
+    if (repoInput && data.repoName) repoInput.value = data.repoName;
+
+    if (data.enabled && data.owner) {
+      if (pillDot)  { pillDot.className = 'status-dot-indicator green-dot'; }
+      if (pillText) { pillText.textContent = `Connected (${data.owner}/${data.repoName})`; }
+      if (infoBox)  { infoBox.style.display = 'flex'; }
+      if (ownerVal) { ownerVal.textContent = data.owner; }
+      if (repoLink) {
+        repoLink.textContent = `${data.owner}/${data.repoName} (Private)`;
+        repoLink.href = `https://github.com/${data.owner}/${data.repoName}`;
+      }
+      if (lastSync) {
+        lastSync.textContent = data.lastSync ? new Date(data.lastSync).toLocaleString() : 'Never';
+      }
+      if (manualBtn)  { manualBtn.style.display = 'inline-flex'; }
+      if (disconnect) { disconnect.style.display = 'inline-block'; }
+      if (tokenInput && data.hasToken && !tokenInput.value) {
+        tokenInput.placeholder = '•••••••••••••••••••••••• (Connected)';
+      }
+    } else {
+      if (pillDot)  { pillDot.className = 'status-dot-indicator red-dot'; }
+      if (pillText) { pillText.textContent = 'Disconnected'; }
+      if (infoBox)  { infoBox.style.display = 'none'; }
+      if (manualBtn)  { manualBtn.style.display = 'none'; }
+      if (disconnect) { disconnect.style.display = 'none'; }
+    }
+  } catch (err) {
+    console.error('[Cloud Status Error]:', err.message);
+  }
+}
+
+async function handleSaveCloudSettings() {
+  const tokenInput = $('github-token-input');
+  const repoInput  = $('github-repo-input');
+  const saveBtn    = $('save-cloud-settings-btn');
+
+  const token = tokenInput ? tokenInput.value.trim() : '';
+  const repoName = repoInput ? repoInput.value.trim() : 'orbit-hide-vault-backup';
+
+  if (!token) {
+    showToast('Please enter your GitHub Personal Access Token.', 'error');
+    return;
+  }
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<span>Connecting & Creating Private Repo...</span>`;
+  }
+
+  showToast('Connecting to GitHub API & verifying repo...', 'info');
+
+  try {
+    const res = await fetch('/api/cloud/connect', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, repoName })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showToast(`☁️ Cloud Sync connected! Private repository ${data.owner}/${data.repoName} active.`, 'success');
+      tokenInput.value = '';
+      await loadCloudStatus();
+    } else {
+      showToast(data.error || 'Failed to connect Cloud Sync.', 'error');
+    }
+  } catch (err) {
+    showToast('Network error while connecting Cloud Sync.', 'error');
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span>Connect & Setup Cloud Sync</span>`;
+    }
+  }
+}
+
+async function handleManualSync() {
+  const syncBtn = $('manual-sync-btn');
+  if (syncBtn) { syncBtn.disabled = true; }
+  showToast('Syncing encrypted vault to GitHub...', 'info');
+
+  try {
+    const res = await fetch('/api/cloud/sync', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('☁️ Live sync completed! Vault backup updated on GitHub.', 'success');
+      await loadCloudStatus();
+    } else {
+      showToast(data.error || 'Cloud sync failed.', 'error');
+    }
+  } catch (_) {
+    showToast('Network error during cloud sync.', 'error');
+  } finally {
+    if (syncBtn) { syncBtn.disabled = false; }
+  }
+}
+
+async function handleRestoreCloud() {
+  const tokenInput = $('github-token-input');
+  const repoInput  = $('github-repo-input');
+  const restoreBtn = $('restore-cloud-btn');
+
+  const token = tokenInput ? tokenInput.value.trim() : '';
+  const repoName = repoInput ? repoInput.value.trim() : 'orbit-hide-vault-backup';
+
+  if (restoreBtn) restoreBtn.disabled = true;
+  showToast('Downloading & decrypting cloud backup from GitHub...', 'info');
+
+  try {
+    const res = await fetch('/api/cloud/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, repoName })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showToast(`☁️ Restored ${data.restoredItemsCount} items from GitHub backup!`, 'success');
+      await loadVaultData();
+      await loadCloudStatus();
+    } else {
+      showToast(data.error || 'Failed to restore vault from cloud.', 'error');
+    }
+  } catch (_) {
+    showToast('Network error during cloud restore.', 'error');
+  } finally {
+    if (restoreBtn) restoreBtn.disabled = false;
+  }
+}
+
+async function handleDisconnectCloud() {
+  if (!confirm('Are you sure you want to disconnect GitHub Cloud Sync? Local vault items will remain intact.')) return;
+
+  try {
+    const res = await fetch('/api/cloud/disconnect', { method: 'POST' });
+    if (res.ok) {
+      showToast('Cloud Sync disconnected.', 'info');
+      await loadCloudStatus();
+    }
+  } catch (_) {
+    showToast('Error disconnecting Cloud Sync.', 'error');
+  }
 }
 
 // ── Render Vault Items ─────────────────────────────────────────────

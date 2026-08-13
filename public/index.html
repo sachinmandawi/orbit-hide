@@ -186,6 +186,14 @@
           </svg>
           <span class="nav-item-label">Security Audit Logs</span>
         </div>
+
+        <div class="nav-item" data-view="settings" id="nav-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span class="nav-item-label">Cloud Sync &amp; Settings</span>
+        </div>
       </nav>
 
       <div class="sidebar-bottom-profile">
@@ -226,6 +234,14 @@
         </div>
 
         <div class="header-actions">
+          <!-- Settings Btn -->
+          <button class="btn btn-secondary" id="open-settings-btn" title="Cloud Sync &amp; Vault Settings">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2.2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Settings</span>
+          </button>
           <!-- Add File -->
           <button class="btn btn-primary" id="add-file-btn"
                   title="Add any file to hide/protect">
@@ -318,6 +334,100 @@
               </thead>
               <tbody id="logs-tbody"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ── Settings view ─────────────────────────────────── -->
+        <div id="view-settings-content" style="display:none;">
+          <div class="page-title-row">
+            <h1 class="page-heading">Cloud Sync &amp; Vault Settings</h1>
+          </div>
+
+          <div class="settings-card-grid">
+            <!-- Cloud Sync Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-icon-title">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                  </svg>
+                  <div>
+                    <h3 class="settings-card-title">Encrypted GitHub Cloud Sync</h3>
+                    <p class="settings-card-desc">Automatically backup your encrypted vault to a private GitHub repository.</p>
+                  </div>
+                </div>
+                <div class="status-pill-badge" id="cloud-status-pill">
+                  <span class="status-dot-indicator red-dot" id="cloud-status-dot"></span>
+                  <span id="cloud-status-text">Disconnected</span>
+                </div>
+              </div>
+
+              <div class="settings-card-body">
+                <div class="form-group">
+                  <label class="form-label" for="github-token-input">GitHub Personal Access Token (PAT)</label>
+                  <div style="position: relative; display: flex; align-items: center;">
+                    <input type="password" id="github-token-input" class="form-input" placeholder="ghp_... or github_pat_..." autocomplete="off">
+                    <button id="toggle-token-visibility-btn" class="pwd-eye-btn" type="button" title="Toggle token visibility">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="field-hint-text">Token requires <code>repo</code> scope to create &amp; sync private backups.</p>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="github-repo-input">Backup Repository Name</label>
+                  <input type="text" id="github-repo-input" class="form-input" value="orbit-hide-vault-backup" placeholder="orbit-hide-vault-backup">
+                  <p class="field-hint-text">If this private repository does not exist on your account, Orbit Hide will create it automatically.</p>
+                </div>
+
+                <div class="cloud-info-box" id="cloud-info-box" style="display:none;">
+                  <div class="info-row">
+                    <span class="info-label">Account Owner:</span>
+                    <strong id="cloud-owner-val">-</strong>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Backup Repository:</span>
+                    <a id="cloud-repo-link" href="#" target="_blank" class="repo-link-style">-</a>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Last Live Sync:</span>
+                    <span id="cloud-lastsync-val">Never</span>
+                  </div>
+                </div>
+
+                <div class="settings-actions-row">
+                  <button class="btn btn-primary" id="save-cloud-settings-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                      <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span>Connect &amp; Setup Cloud Sync</span>
+                  </button>
+
+                  <button class="btn btn-secondary" id="manual-sync-btn" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                    </svg>
+                    <span>Sync Now</span>
+                  </button>
+
+                  <button class="btn btn-secondary" id="restore-cloud-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Restore Vault from Cloud</span>
+                  </button>
+
+                  <button class="btn btn-danger-link" id="disconnect-cloud-btn" style="display:none;">Disconnect</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
