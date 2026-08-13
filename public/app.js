@@ -94,7 +94,7 @@ function setupEventListeners() {
       const show = authPasswordInput.type === 'password';
       authPasswordInput.type = show ? 'text' : 'password';
       if (authConfirmInput) authConfirmInput.type = show ? 'text' : 'password';
-      togglePwdBtn.style.color = show ? 'var(--notion-blue)' : '';
+      togglePwdBtn.style.color = show ? 'var(--accent)' : '';
     });
   }
 
@@ -119,12 +119,23 @@ function setupEventListeners() {
       e.preventDefault();
       toggleSidebar();
     }
-    if (e.key === 'Enter' && document.activeElement === authPasswordInput) handleAuthSubmit();
-    if (e.key === 'Enter' && document.activeElement === authConfirmInput)  handleAuthSubmit();
+    if (e.key === 'Enter' && document.activeElement === authPasswordInput) {
+      if (state.authMode === 'create') handleCreateMasterKey();
+      else handleAuthSubmit();
+    }
+    if (e.key === 'Enter' && document.activeElement === authConfirmInput) {
+      if (state.authMode === 'create') handleCreateMasterKey();
+      else handleAuthSubmit();
+    }
     if (e.key === 'Enter' && document.activeElement === recConfirmPwdInput) handleRecoverySubmit();
   });
 
-  if (authSubmitBtn)     authSubmitBtn.addEventListener('click', handleAuthSubmit);
+  if (authSubmitBtn) {
+    authSubmitBtn.addEventListener('click', () => {
+      if (state.authMode === 'create') handleCreateMasterKey();
+      else handleAuthSubmit();
+    });
+  }
   if (recoverySubmitBtn) recoverySubmitBtn.addEventListener('click', handleRecoverySubmit);
 
   const pwdToggle = $('enable-pwd-toggle');
@@ -142,7 +153,7 @@ function setupEventListeners() {
     toggleSecPwdBtn.addEventListener('click', () => {
       const show = secPwdInput.type === 'password';
       secPwdInput.type = show ? 'text' : 'password';
-      toggleSecPwdBtn.style.color = show ? 'var(--notion-blue)' : '';
+      toggleSecPwdBtn.style.color = show ? 'var(--accent)' : '';
     });
   }
 
@@ -152,7 +163,7 @@ function setupEventListeners() {
     toggleTokenBtn.addEventListener('click', () => {
       const show = tokenInput.type === 'password';
       tokenInput.type = show ? 'text' : 'password';
-      toggleTokenBtn.style.color = show ? 'var(--notion-blue)' : '';
+      toggleTokenBtn.style.color = show ? 'var(--accent)' : '';
     });
   }
 
@@ -339,7 +350,7 @@ async function checkAuthStatus() {
   }
 }
 
-// ── Auth Submit (Unlock) ──────────────────────────────────────────
+// ── Auth Submit (Sign In / Unlock) ────────────────────────────────
 async function handleAuthSubmit() {
   const password = authPasswordInput ? authPasswordInput.value.trim() : '';
   if (!password) { showToast('Please enter a master key.', 'error'); return; }
@@ -363,6 +374,51 @@ async function handleAuthSubmit() {
     }
   } catch (_) {
     showToast('Network error during unlock.', 'error');
+  }
+}
+
+// ── Create Master Key (Create Mode) ────────────────────────────────
+async function handleCreateMasterKey() {
+  const password = authPasswordInput ? authPasswordInput.value.trim() : '';
+  const confirm  = authConfirmInput  ? authConfirmInput.value.trim()  : '';
+  const q1       = q1Select  ? q1Select.value  : '';
+  const a1       = a1Input   ? a1Input.value.trim()   : '';
+  const q2       = q2Select  ? q2Select.value  : '';
+  const a2       = a2Input   ? a2Input.value.trim()   : '';
+
+  if (!password || password.length < 4) {
+    showToast('Master Key must be at least 4 characters.', 'error');
+    return;
+  }
+  if (password !== confirm) {
+    showToast('Master Key confirmation does not match.', 'error');
+    return;
+  }
+  if (!a1 || !a2) {
+    showToast('Please fill in both security question answers.', 'error');
+    return;
+  }
+
+  try {
+    const res  = await fetch('/api/auth/setup', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password, q1, a1, q2, a2 })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      localStorage.removeItem('orbit_hide_locked');
+      document.documentElement.classList.remove('is-locked');
+      if (authPasswordInput) authPasswordInput.value = '';
+      if (authConfirmInput)  authConfirmInput.value  = '';
+      showToast('Master Key created! Vault unlocked.', 'success');
+      await loadVaultData();
+    } else {
+      showToast(data.error || 'Failed to create Master Key.', 'error');
+    }
+  } catch (_) {
+    showToast('Network error during master key creation.', 'error');
   }
 }
 
@@ -402,7 +458,6 @@ async function handleRecoverySubmit() {
       if (recA2Input)          recA2Input.value          = '';
       if (recNewPwdInput)      recNewPwdInput.value      = '';
       if (recConfirmPwdInput)  recConfirmPwdInput.value  = '';
-      await checkAuthStatus();
       await loadVaultData();
     } else {
       showToast(data.error || 'Incorrect answers to security questions.', 'error');
@@ -490,6 +545,7 @@ function switchView(view) {
 
   if (view === 'security') loadSecurityStatus();
   if (view === 'settings') loadCloudStatus();
+  if (view === 'logs')     renderLogs();
 
   renderVaultItems();
 }
@@ -761,10 +817,10 @@ function renderVaultItems() {
 
   if (emptyStateMsg) emptyStateMsg.style.display = items.length === 0 ? 'flex' : 'none';
 
-  const folderSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2eaadc" stroke-width="2">
+  const folderSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
   </svg>`;
-  const fileSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+  const fileSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
     <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
     <polyline points="13 2 13 9 20 9"></polyline>
   </svg>`;

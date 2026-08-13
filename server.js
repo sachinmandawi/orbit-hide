@@ -42,6 +42,7 @@ const DEFAULT_DB = {
     masterHash: null,
     salt:       null,
     isSetup:    false,
+    enabled:    false,
     q1:         null,
     a1Hash:     null,
     q2:         null,
@@ -71,6 +72,11 @@ function readDB() {
     }
     if (db.auth && db.auth.masterHash && !db.auth.isSetup) {
       db.auth.isSetup = true;
+      migrated = true;
+    }
+    // Migrate: ensure `enabled` field exists on auth block
+    if (db.auth && db.auth.enabled === undefined) {
+      db.auth.enabled = !!db.auth.masterHash;
       migrated = true;
     }
     if (!Array.isArray(db.items)) { db.items = []; migrated = true; }
@@ -132,7 +138,7 @@ function runCmd(cmd) {
   });
 }
 
-function q(p) { return `"${String(p).replace(/\\+$/, '')}"`; }
+function q(p) { return `"${String(p).replace(/["]/g, '').replace(/\\+$/, '')}"`; }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HIDE / UNHIDE (attrib +h +s / -h -s)
@@ -483,7 +489,7 @@ app.get('/api/system/stats', (req, res) => {
   const hidden = db.items.filter(i => i.isHidden).length;
   const score  = total === 0
     ? 100
-    : Math.max(0, Math.round(100 - ((total - hidden) / total) * 50));
+    : Math.round((hidden / total) * 100);
 
   res.json({ totalItems: total, hiddenItems: hidden, securityScore: score });
 });

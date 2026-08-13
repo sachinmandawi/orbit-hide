@@ -2,20 +2,21 @@
 
 <div align="center">
 
-  <img src="public/logo.png" alt="Orbit Hide Logo" width="110" height="110">
+  <img src="public/logo.png" alt="Orbit Hide Logo" width="100" height="100">
 
   # 🛡️ ORBIT HIDE
   **Ultra-Fast, Zero Data-Loss Stealth Hiding for Windows Files & Folders**
 
   [![Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
   [![Security](https://img.shields.io/badge/Security-PBKDF2--SHA512-success?style=for-the-badge&logo=securityScorecard&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
-  [![Offline](https://img.shields.io/badge/Privacy-100%25%20Offline-orange?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
+  [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Offline-orange?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
   [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+  [![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen?style=for-the-badge)](https://github.com/sachinmandawi/orbit-hide/releases)
 
   ---
 
   <p align="center">
-    <b>Orbit Hide</b> is a state-of-the-art local security utility designed to instantly hide sensitive files and folders in Windows File Explorer using kernel-level stealth attributes (<code>+h +s</code>), 100% offline security, and seamless right-click context menu integration.
+    <b>Orbit Hide</b> is a state-of-the-art local security utility designed to instantly hide sensitive files and folders in Windows File Explorer using kernel-level stealth attributes (<code>+h +s</code>), optional Master Key password protection, security question recovery, and encrypted GitHub cloud backup — 100% offline by default.
   </p>
 
 </div>
@@ -35,12 +36,17 @@ Right-click any file or folder in Windows Explorer and click **`Hide with Orbit 
 * **Zero Configuration:** Automatically registers into Windows Registry (`HKCU`) on first launch — no admin prompt required.
 
 ### 🔑 Master Key & Security Questions Recovery
+* **Optional Password Protection:** Lock your vault with a custom Master Key. Can be enabled or disabled any time.
 * **PBKDF2 + SHA-512 Hashing:** Your master key is hashed with 100,000 iterations + 16-byte random salt.
 * **Security Questions Recovery:** Forgot your password? Answer 2 secret security questions to reset your master key instantly.
 
+### ☁️ Encrypted GitHub Cloud Backup
+* Connect your private GitHub repository to keep an AES-256-CBC encrypted backup of your vault.
+* Auto-sync on every change. Restore from any device with your GitHub token and master password.
+
 ### 🛡️ 100% Offline & Local Vault
-* No internet access, no cloud sync, no tracking.
 * All configuration stays 100% locally inside `%APPDATA%\Orbit Hide\vault_db.json`.
+* Internet is only used if you explicitly enable optional Cloud Sync.
 
 ---
 
@@ -53,7 +59,10 @@ Right-click any file or folder in Windows Explorer and click **`Hide with Orbit 
 | **Right-Click Stealth Menu** | ✅ **Included** | ❌ No | ❌ No |
 | **Zero Window Popups** | ✅ **Pure Stealth** | ❌ No | ❌ No |
 | **Offline Security** | 🔒 **100% Offline** | ⚠️ Varies | 🔒 Local |
+| **Password Protection (Optional)** | ✅ **Included** | ✅ Yes | ❌ No |
 | **Password Recovery (Q&A)** | ✅ **Included** | ❌ Hard | ❌ No |
+| **Encrypted Cloud Backup** | ✅ **GitHub Private Repo** | ❌ No | ❌ No |
+| **Security Audit Logs** | ✅ **Built-in** | ❌ No | ❌ No |
 
 ---
 
@@ -61,8 +70,19 @@ Right-click any file or folder in Windows Explorer and click **`Hide with Orbit 
 
 Download the latest version directly from the [GitHub Releases](https://github.com/sachinmandawi/orbit-hide/releases) page:
 
-* 🚀 **[Orbit Hide Setup 1.0.0.exe](https://github.com/sachinmandawi/orbit-hide/releases/download/v1.0.0/Orbit.Hide.Setup.1.0.0.exe)** — Official Windows Installer.
-* 📦 **[Orbit Hide 1.0.0.exe](https://github.com/sachinmandawi/orbit-hide/releases/download/v1.0.0/Orbit.Hide.1.0.0.exe)** — Portable Executable (No installation required).
+* 🚀 **[Orbit Hide Setup 1.0.0.exe](https://github.com/sachinmandawi/orbit-hide/releases/download/v1.0.0/Orbit.Hide.Setup.1.0.0.exe)** — Official Windows Installer (recommended).
+* 📦 **[Orbit Hide Portable 1.0.0.exe](https://github.com/sachinmandawi/orbit-hide/releases/download/v1.0.0/Orbit.Hide.1.0.0.exe)** — Portable Executable, no installation required.
+
+---
+
+## 🚀 Getting Started
+
+1. Download and run the installer (or portable EXE).
+2. The app opens directly to your **Vault Overview**.
+3. Click **Add File** or **Add Folder** to add items to your vault.
+4. Click **👁 Hide** to instantly hide any item from Windows Explorer.
+5. *(Optional)* Go to **Password & Security** in the sidebar to set a Master Key.
+6. *(Optional)* Go to **GitHub Sync** to enable encrypted cloud backup.
 
 ---
 
@@ -78,11 +98,13 @@ Download the latest version directly from the [GitHub Releases](https://github.c
 
 ## 🛠️ Tech Stack & Architecture
 
-* **Desktop Framework:** Electron.js v43
+* **Desktop Framework:** Electron.js v31
 * **Backend Server:** Node.js Express REST API
-* **Security Hashing:** PBKDF2 with SHA-512 & Salt (Crypto module)
+* **Security Hashing:** PBKDF2 with SHA-512 & Salt (Node.js `crypto` module)
+* **Cloud Encryption:** AES-256-CBC (GitHub private repository backup)
 * **OS Engine:** Windows Native Attributes (`attrib +h +s` / `attrib -h -s`)
 * **Registry Integration:** Windows HKCU Shell Commands (`reg.exe`)
+* **UI:** Vanilla HTML/CSS/JS with premium dark theme
 
 ---
 
