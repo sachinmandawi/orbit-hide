@@ -276,40 +276,71 @@ function switchAuthTab(mode) {
   if (authConfirmInput)  authConfirmInput.value = '';
 }
 
-// ── Logout ───────────────────────────────────────────────────────
+// ── Lock Vault ───────────────────────────────────────────────────
 function handleLogout() {
   handleLockVault();
 }
 
-function handleLockVault() {
-  localStorage.setItem('orbit_hide_locked', 'true');
-  document.documentElement.classList.add('is-locked');
-  switchAuthTab('signin');
-  if (authPasswordInput) {
-    authPasswordInput.value = '';
-    authPasswordInput.focus();
+async function handleLockVault() {
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json();
+
+    if (!data.isSetup || !data.enabled) {
+      showToast('Password protection is currently disabled. Enable it in Password & Security sidebar tab first.', 'error');
+      localStorage.removeItem('orbit_hide_locked');
+      document.documentElement.classList.remove('is-locked');
+      const authScreen = $('auth-screen');
+      if (authScreen) authScreen.style.display = 'none';
+      return;
+    }
+
+    localStorage.setItem('orbit_hide_locked', 'true');
+    document.documentElement.classList.add('is-locked');
+    const authScreen = $('auth-screen');
+    if (authScreen) authScreen.style.display = 'flex';
+    switchAuthTab('signin');
+    if (authPasswordInput) {
+      authPasswordInput.value = '';
+      authPasswordInput.focus();
+    }
+    showToast('Vault locked. Enter master key to unlock.', 'info');
+  } catch (_) {
+    showToast('Failed to verify auth status.', 'error');
   }
-  showToast('Vault locked. Enter master key to unlock.', 'info');
 }
 
 // ── Auth Status Check ─────────────────────────────────────────────
 async function checkAuthStatus() {
-  const isLocked = localStorage.getItem('orbit_hide_locked') === 'true';
-
-  if (isLocked) {
-    document.documentElement.classList.add('is-locked');
-    switchAuthTab('signin');
-  } else {
-    document.documentElement.classList.remove('is-locked');
-    await loadVaultData();
-  }
-
   try {
     const res  = await fetch('/api/auth/status');
     const data = await res.json();
 
     state.q1Text = data.q1 || 'What was the name of your first school?';
     state.q2Text = data.q2 || 'What is your favorite pet or childhood nickname?';
+
+    if (!data.enabled) {
+      localStorage.removeItem('orbit_hide_locked');
+      document.documentElement.classList.remove('is-locked');
+      const authScreen = $('auth-screen');
+      if (authScreen) authScreen.style.display = 'none';
+      await loadVaultData();
+      return;
+    }
+
+    const isLocked = localStorage.getItem('orbit_hide_locked') === 'true';
+
+    if (isLocked) {
+      document.documentElement.classList.add('is-locked');
+      const authScreen = $('auth-screen');
+      if (authScreen) authScreen.style.display = 'flex';
+      switchAuthTab('signin');
+    } else {
+      document.documentElement.classList.remove('is-locked');
+      const authScreen = $('auth-screen');
+      if (authScreen) authScreen.style.display = 'none';
+      await loadVaultData();
+    }
   } catch (_) {
     showToast('Cannot connect to Orbit Hide server. Please restart.', 'error');
   }
@@ -491,6 +522,12 @@ async function handleToggleSecurity(e) {
     });
     const data = await res.json();
     if (res.ok && data.success) {
+      if (!enabled) {
+        localStorage.removeItem('orbit_hide_locked');
+        document.documentElement.classList.remove('is-locked');
+        const authScreen = $('auth-screen');
+        if (authScreen) authScreen.style.display = 'none';
+      }
       showToast(enabled ? '🔒 Vault password protection enabled.' : '🔓 Password protection disabled.', 'info');
     } else {
       e.target.checked = !enabled;
