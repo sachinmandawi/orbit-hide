@@ -183,6 +183,11 @@ function hashPassword(password, salt) {
   return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
 }
 
+function hashAnswer(answer, salt) {
+  if (!answer) return '';
+  return crypto.pbkdf2Sync(answer.toLowerCase().trim(), salt, 50000, 32, 'sha256').toString('hex');
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // AUTO-REGISTER WINDOWS CONTEXT MENU FOR NEW USERS ON BOOT
 // ─────────────────────────────────────────────────────────────────────────────
