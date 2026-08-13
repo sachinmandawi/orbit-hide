@@ -72,8 +72,6 @@ function setupEventListeners() {
   if (collapseSidebarBtn) collapseSidebarBtn.addEventListener('click', toggleSidebar);
   if (expandSidebarBtn)   expandSidebarBtn.addEventListener('click',   toggleSidebar);
 
-  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-
   if (tabSigninBtn) tabSigninBtn.addEventListener('click', () => switchAuthTab('signin'));
   if (tabCreateBtn) tabCreateBtn.addEventListener('click', () => switchAuthTab('create'));
 
@@ -310,7 +308,7 @@ async function handleLockVault() {
   }
 }
 
-// ── Auth Status Check ─────────────────────────────────────────────
+// ── Auth Status Check (Run on Software Start) ────────────────────
 async function checkAuthStatus() {
   try {
     const res  = await fetch('/api/auth/status');
@@ -319,23 +317,18 @@ async function checkAuthStatus() {
     state.q1Text = data.q1 || 'What was the name of your first school?';
     state.q2Text = data.q2 || 'What is your favorite pet or childhood nickname?';
 
-    if (!data.enabled) {
-      localStorage.removeItem('orbit_hide_locked');
-      document.documentElement.classList.remove('is-locked');
-      const authScreen = $('auth-screen');
-      if (authScreen) authScreen.style.display = 'none';
-      await loadVaultData();
-      return;
-    }
-
-    const isLocked = localStorage.getItem('orbit_hide_locked') === 'true';
-
-    if (isLocked) {
+    if (data.enabled && data.isSetup) {
+      // Password protection enabled: require Master Key on software boot
       document.documentElement.classList.add('is-locked');
       const authScreen = $('auth-screen');
       if (authScreen) authScreen.style.display = 'flex';
       switchAuthTab('signin');
+      if (authPasswordInput) {
+        authPasswordInput.value = '';
+        authPasswordInput.focus();
+      }
     } else {
+      // Password protection disabled: boot directly into Dashboard
       document.documentElement.classList.remove('is-locked');
       const authScreen = $('auth-screen');
       if (authScreen) authScreen.style.display = 'none';
