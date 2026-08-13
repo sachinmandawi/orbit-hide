@@ -724,11 +724,58 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
 .dropdown-option:hover { background-color: var(--bg-hover); }
 
 /* ── Settings & Cloud Sync ──────────────────────────────────── */
+.settings-layout-wrapper {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  max-width: 920px;
+}
+
+.settings-category-menu {
+  width: 190px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px;
+}
+
+.settings-cat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settings-cat-item:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-cat-item.active {
+  background-color: rgba(46, 170, 220, 0.12);
+  color: var(--notion-blue);
+  font-weight: 600;
+}
+
+.settings-panel-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .settings-card-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  max-width: 720px;
 }
 
 .settings-card {
@@ -851,41 +898,4 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
 }
 .btn-danger-link:hover {
   background-color: var(--notion-red-bg);
-}
-
-/* ── Settings Subcategories ─────────────────────────────────── */
-.settings-subcat-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 20px;
-  padding-bottom: 2px;
-}
-
-.subcat-tab-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 14px;
-  border-radius: var(--radius-sm);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border-bottom: 2px solid transparent;
-}
-
-.subcat-tab-btn:hover {
-  color: var(--text-primary);
-  background-color: var(--bg-hover);
-}
-
-.subcat-tab-btn.active {
-  color: var(--notion-blue);
-  background-color: rgba(46,170,220,0.1);
-  border-bottom: 2px solid var(--notion-blue);
 }

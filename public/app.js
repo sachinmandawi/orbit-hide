@@ -151,26 +151,15 @@ function setupEventListeners() {
   const disconnectCloudBtn = $('disconnect-cloud-btn');
   if (disconnectCloudBtn) disconnectCloudBtn.addEventListener('click', handleDisconnectCloud);
 
-  setupSubcatTabs();
-
-// ── Settings Subcategory Tabs ────────────────────────────────────
-function setupSubcatTabs() {
-  document.querySelectorAll('.subcat-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const subcat = btn.getAttribute('data-subcat');
-      document.querySelectorAll('.subcat-tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const panelGithub   = $('panel-github-sync');
-      const panelSecurity = $('panel-security');
-      const panelGeneral  = $('panel-general');
-
-      if (panelGithub)   panelGithub.style.display   = (subcat === 'github-sync') ? 'block' : 'none';
-      if (panelSecurity) panelSecurity.style.display = (subcat === 'security') ? 'block' : 'none';
-      if (panelGeneral)  panelGeneral.style.display  = (subcat === 'general') ? 'block' : 'none';
+  document.querySelectorAll('.settings-cat-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const cat = el.getAttribute('data-cat');
+      document.querySelectorAll('.settings-cat-item').forEach(c => c.classList.toggle('active', c === el));
+      document.querySelectorAll('.settings-cat-panel').forEach(p => {
+        if (p) p.style.display = (p.id === `panel-${cat}`) ? 'block' : 'none';
+      });
     });
   });
-}
 
   // ── Add File ────────────────────────────────────────────────────
   if (addFileBtn) {
