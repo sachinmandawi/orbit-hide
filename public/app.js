@@ -153,11 +153,12 @@ function setupEventListeners() {
 
   document.querySelectorAll('.settings-cat-item').forEach(el => {
     el.addEventListener('click', () => {
-      const cat = el.getAttribute('data-cat');
-      document.querySelectorAll('.settings-cat-item').forEach(c => c.classList.toggle('active', c === el));
-      document.querySelectorAll('.settings-cat-panel').forEach(p => {
-        if (p) p.style.display = (p.id === `panel-${cat}`) ? 'block' : 'none';
-      });
+      const tab = el.getAttribute('data-settings-tab');
+      document.querySelectorAll('.settings-cat-item').forEach(item => item.classList.remove('active'));
+      document.querySelectorAll('.settings-tab-panel').forEach(panel => panel.classList.remove('active'));
+      el.classList.add('active');
+      const targetPanel = $(`settings-panel-${tab}`);
+      if (targetPanel) targetPanel.classList.add('active');
     });
   });
 

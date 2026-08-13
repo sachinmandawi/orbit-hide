@@ -724,19 +724,18 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
 .dropdown-option:hover { background-color: var(--bg-hover); }
 
 /* ── Settings & Cloud Sync ──────────────────────────────────── */
-.settings-layout-wrapper {
-  display: flex;
+.settings-wrapper-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
   gap: 20px;
-  align-items: flex-start;
-  max-width: 920px;
+  max-width: 960px;
+  align-items: start;
 }
 
-.settings-category-menu {
-  width: 190px;
-  flex-shrink: 0;
+.settings-categories-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -747,35 +746,44 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+  border: 1px solid transparent;
 }
-
 .settings-cat-item:hover {
   background-color: var(--bg-hover);
-  color: var(--text-primary);
 }
-
 .settings-cat-item.active {
   background-color: rgba(46, 170, 220, 0.12);
-  color: var(--notion-blue);
+  border-color: rgba(46, 170, 220, 0.3);
+}
+
+.cat-label-box {
+  display: flex;
+  flex-direction: column;
+}
+.cat-title {
+  font-size: 13.5px;
   font-weight: 600;
+  color: #fff;
+}
+.cat-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 .settings-panel-content {
   flex: 1;
-  min-width: 0;
 }
 
-.settings-card-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+.settings-tab-panel {
+  display: none;
+}
+.settings-tab-panel.active {
+  display: block;
 }
 
 .settings-card {
