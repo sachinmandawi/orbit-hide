@@ -129,9 +129,6 @@ function setupEventListeners() {
   if (authSubmitBtn)     authSubmitBtn.addEventListener('click', handleAuthSubmit);
   if (recoverySubmitBtn) recoverySubmitBtn.addEventListener('click', handleRecoverySubmit);
 
-  const openSettingsBtn = $('open-settings-btn');
-  if (openSettingsBtn) openSettingsBtn.addEventListener('click', () => switchView('settings'));
-
   const toggleTokenBtn = $('toggle-token-visibility-btn');
   const tokenInput    = $('github-token-input');
   if (toggleTokenBtn && tokenInput) {
