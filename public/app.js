@@ -529,11 +529,11 @@ async function loadCloudStatus() {
 
     if (data.enabled && data.owner) {
       if (pillDot)  { pillDot.className = 'status-dot-indicator green-dot'; }
-      if (pillText) { pillText.textContent = `Connected (${data.owner}/${data.repoName})`; }
+      if (pillText) { pillText.textContent = 'Connected'; }
       if (infoBox)  { infoBox.style.display = 'flex'; }
       if (ownerVal) { ownerVal.textContent = data.owner; }
       if (repoLink) {
-        repoLink.textContent = `${data.owner}/${data.repoName} (Private)`;
+        repoLink.textContent = 'View Repository ↗';
         repoLink.href = `https://github.com/${data.owner}/${data.repoName}`;
       }
       if (lastSync) {

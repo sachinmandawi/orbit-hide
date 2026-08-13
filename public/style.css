@@ -724,73 +724,18 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
 .dropdown-option:hover { background-color: var(--bg-hover); }
 
 /* ── Settings & Cloud Sync ──────────────────────────────────── */
-.settings-wrapper-layout {
+.settings-card-grid {
   display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 20px;
-  max-width: 960px;
-  align-items: start;
-}
-
-.settings-categories-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 8px;
-}
-
-.settings-cat-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  user-select: none;
-  border: 1px solid transparent;
-}
-.settings-cat-item:hover {
-  background-color: var(--bg-hover);
-}
-.settings-cat-item.active {
-  background-color: rgba(46, 170, 220, 0.12);
-  border-color: rgba(46, 170, 220, 0.3);
-}
-
-.cat-label-box {
-  display: flex;
-  flex-direction: column;
-}
-.cat-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: #fff;
-}
-.cat-subtext {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.settings-panel-content {
-  flex: 1;
-}
-
-.settings-tab-panel {
-  display: none;
-}
-.settings-tab-panel.active {
-  display: block;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  max-width: 580px;
 }
 
 .settings-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 20px 24px;
+  padding: 16px 20px;
 }
 
 .settings-card-header {
@@ -798,26 +743,20 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 16px;
-  margin-bottom: 18px;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .settings-icon-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .settings-card-title {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 2px 0;
-}
-
-.settings-card-desc {
-  font-size: 12.5px;
-  color: var(--text-muted);
   margin: 0;
 }
 
@@ -825,9 +764,9 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 12px;
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
@@ -835,74 +774,76 @@ html:not(.is-authenticated) #main-app-screen { display: none  !important; }
 }
 
 .status-dot-indicator {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   display: inline-block;
 }
 
 .red-dot { background-color: #ef4444; }
-.green-dot { background-color: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+.green-dot { background-color: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
 
-.field-hint-text {
-  font-size: 11.5px;
+.form-row-compact {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.flex-2 { flex: 1.8; }
+.flex-1 { flex: 1.2; }
+
+.cloud-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-.field-hint-text code {
-  background: var(--bg-sidebar);
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: var(--notion-blue);
-}
-
-.cloud-info-box {
   background-color: var(--bg-sidebar);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  margin-top: 14px;
-  margin-bottom: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 12.5px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
 }
 
-.info-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.sync-time-text strong {
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.info-label {
-  color: var(--text-muted);
+.sync-bar-sep {
+  color: var(--border-color);
 }
 
 .repo-link-style {
   color: var(--notion-blue);
   text-decoration: none;
   font-weight: 500;
+  margin-left: auto;
 }
 .repo-link-style:hover { text-decoration: underline; }
 
 .settings-actions-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 20px;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.settings-actions-row .btn {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  height: 32px;
 }
 
 .btn-danger-link {
   background: transparent;
   border: none;
   color: var(--notion-red);
-  font-size: 12.5px;
+  font-size: 12px;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
+  margin-left: auto;
 }
 .btn-danger-link:hover {
   background-color: var(--notion-red-bg);
