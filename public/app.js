@@ -615,7 +615,7 @@ async function loadCloudStatus() {
       if (manualBtn)  { manualBtn.style.display = 'inline-flex'; }
       if (disconnect) { disconnect.style.display = 'inline-block'; }
       if (tokenInput && data.hasToken && !tokenInput.value) {
-        tokenInput.placeholder = '•••••••••••••••••••••••• (Connected)';
+        tokenInput.placeholder = '••••••••••••••••••••••••';
       }
     } else {
       if (pillDot)  { pillDot.className = 'status-dot-indicator red-dot'; }
