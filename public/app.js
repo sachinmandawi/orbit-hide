@@ -129,6 +129,25 @@ function setupEventListeners() {
   if (authSubmitBtn)     authSubmitBtn.addEventListener('click', handleAuthSubmit);
   if (recoverySubmitBtn) recoverySubmitBtn.addEventListener('click', handleRecoverySubmit);
 
+  const pwdToggle = $('enable-pwd-toggle');
+  if (pwdToggle) pwdToggle.addEventListener('change', handleToggleSecurity);
+
+  const saveSecBtn = $('save-security-btn');
+  if (saveSecBtn) saveSecBtn.addEventListener('click', handleSaveSecuritySettings);
+
+  const lockNowBtn = $('lock-now-btn');
+  if (lockNowBtn) lockNowBtn.addEventListener('click', handleLockVault);
+
+  const toggleSecPwdBtn = $('toggle-sec-pwd-btn');
+  const secPwdInput     = $('sec-master-pwd-input');
+  if (toggleSecPwdBtn && secPwdInput) {
+    toggleSecPwdBtn.addEventListener('click', () => {
+      const show = secPwdInput.type === 'password';
+      secPwdInput.type = show ? 'text' : 'password';
+      toggleSecPwdBtn.style.color = show ? 'var(--notion-blue)' : '';
+    });
+  }
+
   const toggleTokenBtn = $('toggle-token-visibility-btn');
   const tokenInput    = $('github-token-input');
   if (toggleTokenBtn && tokenInput) {
@@ -259,25 +278,29 @@ function switchAuthTab(mode) {
 
 // ── Logout ───────────────────────────────────────────────────────
 function handleLogout() {
-  localStorage.removeItem('orbit_hide_authenticated');
-  document.documentElement.classList.remove('is-authenticated');
-  state.items = [];
-  state.logs  = [];
+  handleLockVault();
+}
+
+function handleLockVault() {
+  localStorage.setItem('orbit_hide_locked', 'true');
+  document.documentElement.classList.add('is-locked');
+  switchAuthTab('signin');
   if (authPasswordInput) {
     authPasswordInput.value = '';
     authPasswordInput.focus();
   }
-  if (authConfirmInput)  authConfirmInput.value  = '';
-  switchAuthTab('signin');
-  showToast('Logged out. Vault is now locked.', 'info');
+  showToast('Vault locked. Enter master key to unlock.', 'info');
 }
 
 // ── Auth Status Check ─────────────────────────────────────────────
 async function checkAuthStatus() {
-  const savedSession = localStorage.getItem('orbit_hide_authenticated') === 'true';
+  const isLocked = localStorage.getItem('orbit_hide_locked') === 'true';
 
-  if (savedSession) {
-    document.documentElement.classList.add('is-authenticated');
+  if (isLocked) {
+    document.documentElement.classList.add('is-locked');
+    switchAuthTab('signin');
+  } else {
+    document.documentElement.classList.remove('is-locked');
     await loadVaultData();
   }
 
@@ -287,98 +310,35 @@ async function checkAuthStatus() {
 
     state.q1Text = data.q1 || 'What was the name of your first school?';
     state.q2Text = data.q2 || 'What is your favorite pet or childhood nickname?';
-
-    if (!data.isSetup) {
-      // First-time setup mode: show Create Master Key tab
-      if (tabCreateBtn) tabCreateBtn.style.display = 'inline-block';
-      if (tabSigninBtn) tabSigninBtn.style.display = 'none';
-      if (forgotPwdLink) forgotPwdLink.style.display = 'none';
-      localStorage.removeItem('orbit_hide_authenticated');
-      document.documentElement.classList.remove('is-authenticated');
-      switchAuthTab('create');
-    } else {
-      // Master Key ALREADY configured: hide Create Master Key tab permanently
-      if (tabCreateBtn) tabCreateBtn.style.display = 'none';
-      if (tabSigninBtn) tabSigninBtn.style.display = 'inline-block';
-      if (forgotPwdLink) forgotPwdLink.style.display = 'inline';
-      if (!savedSession) switchAuthTab('signin');
-    }
   } catch (_) {
     showToast('Cannot connect to Orbit Hide server. Please restart.', 'error');
   }
 }
 
-// ── Auth Submit ───────────────────────────────────────────────────
+// ── Auth Submit (Unlock) ──────────────────────────────────────────
 async function handleAuthSubmit() {
   const password = authPasswordInput ? authPasswordInput.value.trim() : '';
   if (!password) { showToast('Please enter a master key.', 'error'); return; }
 
-  if (state.authMode === 'create') {
-    if (password.length < 4) {
-      showToast('Master key must be at least 4 characters.', 'error');
-      return;
+  try {
+    const res  = await fetch('/api/auth/login', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      localStorage.removeItem('orbit_hide_locked');
+      document.documentElement.classList.remove('is-locked');
+      if (authPasswordInput) authPasswordInput.value = '';
+      showToast('Vault unlocked!', 'success');
+      await loadVaultData();
+    } else {
+      showToast(data.error || 'Incorrect Master Key.', 'error');
     }
-    const confirm = authConfirmInput ? authConfirmInput.value.trim() : '';
-    if (password !== confirm) {
-      showToast('Keys do not match. Please re-enter.', 'error');
-      return;
-    }
-
-    const q1 = q1Select ? q1Select.value : '';
-    const a1 = a1Input  ? a1Input.value.trim()  : '';
-    const q2 = q2Select ? q2Select.value : '';
-    const a2 = a2Input  ? a2Input.value.trim()  : '';
-
-    if (!a1 || !a2) {
-      showToast('Please answer both security questions for password recovery.', 'error');
-      return;
-    }
-
-    try {
-      const res  = await fetch('/api/auth/setup', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ password, q1, a1, q2, a2 })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        localStorage.setItem('orbit_hide_authenticated', 'true');
-        document.documentElement.classList.add('is-authenticated');
-        if (authPasswordInput) authPasswordInput.value = '';
-        if (authConfirmInput)  authConfirmInput.value  = '';
-        showToast('Master Key & Security Questions created! Vault is open.', 'success');
-        await checkAuthStatus();
-        await loadVaultData();
-      } else {
-        showToast(data.error || 'Setup failed. Please try again.', 'error');
-      }
-    } catch (_) {
-      showToast('Server error during setup. Please restart.', 'error');
-    }
-
-  } else {
-    try {
-      const res  = await fetch('/api/auth/login', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ password })
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        localStorage.setItem('orbit_hide_authenticated', 'true');
-        document.documentElement.classList.add('is-authenticated');
-        if (authPasswordInput) authPasswordInput.value = '';
-        showToast('Vault unlocked successfully!', 'success');
-        await loadVaultData();
-      } else {
-        showToast(data.error || 'Incorrect master key.', 'error');
-        if (authPasswordInput) authPasswordInput.select();
-      }
-    } catch (_) {
-      showToast('Server error during login. Please restart.', 'error');
-    }
+  } catch (_) {
+    showToast('Network error during unlock.', 'error');
   }
 }
 
@@ -411,8 +371,8 @@ async function handleRecoverySubmit() {
     const data = await res.json();
 
     if (res.ok && data.success) {
-      localStorage.setItem('orbit_hide_authenticated', 'true');
-      document.documentElement.classList.add('is-authenticated');
+      localStorage.removeItem('orbit_hide_locked');
+      document.documentElement.classList.remove('is-locked');
       showToast('Master Key reset successfully! Vault unlocked.', 'success');
       if (recA1Input)          recA1Input.value          = '';
       if (recA2Input)          recA2Input.value          = '';
@@ -485,6 +445,7 @@ function switchView(view) {
 
   const dashContent     = $('view-dashboard-content');
   const logsContent     = $('view-logs-content');
+  const securityContent = $('view-security-content');
   const settingsContent = $('view-settings-content');
   const heading         = $('view-heading');
 
@@ -492,20 +453,102 @@ function switchView(view) {
     dashboard: 'Vault Overview',
     hidden:    'Hidden Items',
     logs:      'Security Audit Logs',
+    security:  'Password & Security',
     settings:  'GitHub Sync'
   };
 
   if (dashContent)     dashContent.style.display     = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
   if (logsContent)     logsContent.style.display     = (view === 'logs') ? 'block' : 'none';
+  if (securityContent) securityContent.style.display = (view === 'security') ? 'block' : 'none';
   if (settingsContent) settingsContent.style.display = (view === 'settings') ? 'block' : 'none';
 
   if (heading && labels[view]) heading.textContent = labels[view];
 
-  if (view === 'settings') {
-    loadCloudStatus();
-  }
+  if (view === 'security') loadSecurityStatus();
+  if (view === 'settings') loadCloudStatus();
 
   renderVaultItems();
+}
+
+// ── Password & Security Controllers ─────────────────────────────────
+async function loadSecurityStatus() {
+  try {
+    const res = await fetch('/api/auth/status');
+    const data = await res.json();
+
+    const pwdToggle = $('enable-pwd-toggle');
+    if (pwdToggle) pwdToggle.checked = !!data.enabled;
+  } catch (_) {}
+}
+
+async function handleToggleSecurity(e) {
+  const enabled = e.target.checked;
+  try {
+    const res = await fetch('/api/auth/toggle-protection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(enabled ? '🔒 Vault password protection enabled.' : '🔓 Password protection disabled.', 'info');
+    } else {
+      e.target.checked = !enabled;
+      showToast(data.error || 'Please set a master key first before enabling password protection.', 'error');
+    }
+  } catch (_) {
+    e.target.checked = !enabled;
+    showToast('Network error while updating security state.', 'error');
+  }
+}
+
+async function handleSaveSecuritySettings() {
+  const pwdInput     = $('sec-master-pwd-input');
+  const confirmInput = $('sec-confirm-pwd-input');
+  const q1Select     = $('sec-q1-select');
+  const a1Input      = $('sec-a1-input');
+  const q2Select     = $('sec-q2-select');
+  const a2Input      = $('sec-a2-input');
+
+  const password = pwdInput ? pwdInput.value.trim() : '';
+  const confirm  = confirmInput ? confirmInput.value.trim() : '';
+  const q1       = q1Select ? q1Select.value : '';
+  const a1       = a1Input ? a1Input.value.trim() : '';
+  const q2       = q2Select ? q2Select.value : '';
+  const a2       = a2Input ? a2Input.value.trim() : '';
+
+  if (!password || password.length < 4) {
+    showToast('Master Key must be at least 4 characters.', 'error');
+    return;
+  }
+  if (password !== confirm) {
+    showToast('Master Key confirmation does not match.', 'error');
+    return;
+  }
+  if (!a1 || !a2) {
+    showToast('Please answer both security questions for password recovery.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, q1, a1, q2, a2 })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      showToast('🔒 Master Key & Security Questions saved!', 'success');
+      pwdInput.value = '';
+      confirmInput.value = '';
+      await loadSecurityStatus();
+    } else {
+      showToast(data.error || 'Failed to update security settings.', 'error');
+    }
+  } catch (_) {
+    showToast('Network error while saving security settings.', 'error');
+  }
 }
 
 // ── Cloud Sync Controllers ─────────────────────────────────────────

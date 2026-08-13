@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orbit Hide — Hide &amp; Protect</title>
 
-  <!-- Anti-flicker: Apply authenticated state before CSS loads -->
+  <!-- Anti-flicker script: Apply locked state if explicitly locked -->
   <script>
     (function() {
       try {
-        if (localStorage.getItem('orbit_hide_authenticated') === 'true') {
-          document.documentElement.classList.add('is-authenticated');
+        if (localStorage.getItem('orbit_hide_locked') === 'true') {
+          document.documentElement.classList.add('is-locked');
         }
       } catch(e) {}
     })();
@@ -180,6 +180,14 @@
           <span class="nav-section-title">System &amp; Security</span>
         </div>
 
+        <div class="nav-item" data-view="security" id="nav-security">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span class="nav-item-label">Password &amp; Security</span>
+        </div>
+
         <div class="nav-item" data-view="logs" id="nav-logs">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
@@ -326,6 +334,88 @@
               </thead>
               <tbody id="logs-tbody"></tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- ── Password & Security view ────────────────────── -->
+        <div id="view-security-content" style="display:none;">
+          <div class="page-title-row">
+            <h1 class="page-heading">Password &amp; Security</h1>
+          </div>
+
+          <div class="settings-card-grid">
+            <!-- Password Protection Card -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-icon-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  <div>
+                    <h3 class="settings-card-title">Vault Lock Protection</h3>
+                  </div>
+                </div>
+                <label class="toggle-switch" title="Enable or Disable Master Key Password Requirement">
+                  <input type="checkbox" id="enable-pwd-toggle">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div class="settings-card-body" id="security-form-body">
+                <div class="form-row-compact">
+                  <div class="form-group flex-1">
+                    <label class="form-label" for="sec-master-pwd-input">Set Master Key</label>
+                    <div style="position: relative; display: flex; align-items: center;">
+                      <input type="password" id="sec-master-pwd-input" class="form-input" placeholder="••••••••" autocomplete="new-password">
+                      <button id="toggle-sec-pwd-btn" class="pwd-eye-btn" type="button" title="Toggle visibility">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group flex-1">
+                    <label class="form-label" for="sec-confirm-pwd-input">Confirm Master Key</label>
+                    <input type="password" id="sec-confirm-pwd-input" class="form-input" placeholder="••••••••" autocomplete="new-password">
+                  </div>
+                </div>
+
+                <!-- Security Questions Setup for Forgot Password Recovery -->
+                <div class="sec-questions-box">
+                  <div class="form-group">
+                    <label class="form-label">Security Question 1 (for Forgot Password Recovery)</label>
+                    <select id="sec-q1-select" class="form-input" style="background:var(--bg-sidebar); color:var(--text-primary); margin-bottom: 6px;">
+                      <option value="What was the name of your first school?">What was the name of your first school?</option>
+                      <option value="What is your childhood nickname?">What is your childhood nickname?</option>
+                      <option value="What is your favorite pet name?">What is your favorite pet name?</option>
+                    </select>
+                    <input type="text" id="sec-a1-input" class="form-input" placeholder="Your Answer 1">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Security Question 2</label>
+                    <select id="sec-q2-select" class="form-input" style="background:var(--bg-sidebar); color:var(--text-primary); margin-bottom: 6px;">
+                      <option value="What is the name of your favorite movie?">What is the name of your favorite movie?</option>
+                      <option value="What city were you born in?">What city were you born in?</option>
+                      <option value="What is your favorite food or dish?">What is your favorite food or dish?</option>
+                    </select>
+                    <input type="text" id="sec-a2-input" class="form-input" placeholder="Your Answer 2">
+                  </div>
+                </div>
+
+                <div class="settings-actions-row">
+                  <button class="btn btn-primary" id="save-security-btn">
+                    <span>Save Security Settings</span>
+                  </button>
+                  <button class="btn btn-secondary" id="lock-now-btn">
+                    <span>Lock Vault Now</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

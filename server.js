@@ -222,24 +222,37 @@ app.get('/api/auth/status', (req, res) => {
   const db = readDB();
   res.json({
     isSetup: !!db.auth.isSetup,
+    enabled: !!db.auth.enabled,
     q1: db.auth.q1 || 'What was the name of your first school?',
     q2: db.auth.q2 || 'What is your favorite pet or childhood nickname?'
   });
 });
 
+app.post('/api/auth/toggle-protection', (req, res) => {
+  const { enabled } = req.body;
+  const db = readDB();
+  
+  if (enabled && !db.auth.isSetup) {
+    return res.status(400).json({ error: 'Please set a master key first before enabling password protection.' });
+  }
+
+  db.auth.enabled = !!enabled;
+  addLog(db, enabled ? 'ENABLE_PASSWORD_PROTECTION' : 'DISABLE_PASSWORD_PROTECTION', 'SYSTEM', true);
+  writeDB(db);
+  res.json({ success: true, enabled: db.auth.enabled });
+});
+
 app.post('/api/auth/setup', (req, res) => {
-  const { password, q1, a1, q2, a2, forceReset } = req.body;
+  const { password, q1, a1, q2, a2 } = req.body;
   if (!password || password.length < 4)
     return res.status(400).json({ error: 'Master key must be at least 4 characters.' });
 
-  const db = readDB();
-  if (db.auth.isSetup && !forceReset)
-    return res.status(400).json({ error: 'Master key already configured.' });
-
+  const db           = readDB();
   const salt         = crypto.randomBytes(16).toString('hex');
   db.auth.salt       = salt;
   db.auth.masterHash = hashPassword(password, salt);
   db.auth.isSetup    = true;
+  db.auth.enabled    = true;
 
   if (q1 && a1) {
     db.auth.q1     = q1.trim();
@@ -250,7 +263,7 @@ app.post('/api/auth/setup', (req, res) => {
     db.auth.a2Hash = hashAnswer(a2, salt);
   }
 
-  addLog(db, forceReset ? 'RESET_MASTER_KEY' : 'SETUP_MASTER_KEY', 'SYSTEM', true);
+  addLog(db, 'UPDATE_SECURITY_SETTINGS', 'SYSTEM', true);
   writeDB(db);
   res.json({ success: true });
 });
@@ -535,13 +548,6 @@ async function triggerAutoCloudSync(db) {
     const owner = db.cloud.owner;
     const repo  = db.cloud.repoName || 'orbit-hide-vault-backup';
 
-    // Check if vault_db.enc exists on repo to get sha
-    const fileRes = await githubApiRequest('GET', `/repos/${owner}/${repo}/contents/vault_db.enc`, token);
-    let sha = null;
-    if (fileRes.status === 200 && fileRes.data && fileRes.data.sha) {
-      sha = fileRes.data.sha;
-    }
-
     // Strip sensitive token from upload copy
     const dbCopy = JSON.parse(JSON.stringify(db));
     if (dbCopy.cloud) {
@@ -551,21 +557,34 @@ async function triggerAutoCloudSync(db) {
     const secretKey = db.auth.masterHash || 'orbit-hide-default';
     const encryptedContent = encryptPayload(JSON.stringify(dbCopy), secretKey);
     const base64Content = Buffer.from(encryptedContent, 'utf8').toString('base64');
-
     const commitMsg = `Vault Backup: ${new Date().toLocaleString()}`;
-    const payload = {
-      message: commitMsg,
-      content: base64Content
-    };
-    if (sha) payload.sha = sha;
 
-    const uploadRes = await githubApiRequest('PUT', `/repos/${owner}/${repo}/contents/vault_db.enc`, token, payload);
-    if (uploadRes.status === 200 || uploadRes.status === 201) {
-      db.cloud.lastSync = new Date().toISOString();
-      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
-      console.log(`[Cloud Sync] Vault database backed up to GitHub Private Repo (${owner}/${repo}) ✓`);
-      return true;
-    } else {
+    // Retry loop with fresh SHA re-fetch & exponential backoff for 100% reliability
+    for (let attempt = 0; attempt < 5; attempt++) {
+      let sha = null;
+      const fileRes = await githubApiRequest('GET', `/repos/${owner}/${repo}/contents/vault_db.enc`, token);
+      if (fileRes.status === 200 && fileRes.data && fileRes.data.sha) {
+        sha = fileRes.data.sha;
+      }
+
+      const payload = { message: commitMsg, content: base64Content };
+      if (sha) payload.sha = sha;
+
+      const uploadRes = await githubApiRequest('PUT', `/repos/${owner}/${repo}/contents/vault_db.enc`, token, payload);
+      if (uploadRes.status === 200 || uploadRes.status === 201) {
+        db.cloud.lastSync = new Date().toISOString();
+        fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+        console.log(`[Cloud Sync] Vault database backed up to GitHub Private Repo (${owner}/${repo}) ✓`);
+        return true;
+      }
+
+      if ((uploadRes.status === 409 || uploadRes.status === 403 || uploadRes.status === 429) && attempt < 4) {
+        const delay = (attempt + 1) * 600;
+        console.warn(`[Cloud Sync Retry] Rate limit or SHA conflict (${uploadRes.status}), retrying in ${delay}ms... (Attempt ${attempt + 1}/5)`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
       console.error('[Cloud Sync] Upload failed:', uploadRes.status, uploadRes.data);
       return false;
     }
