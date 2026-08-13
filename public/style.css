@@ -190,8 +190,15 @@ html:not(.is-locked) #main-app-screen { display: flex  !important; }
   align-items: center;
   padding: 0;
   transition: color 0.1s ease;
+  z-index: 2;
 }
 .pwd-eye-btn:hover { color: var(--text-primary); }
+
+/* Prevent password text / dots from overlapping with eye toggle icon */
+div:has(> .pwd-eye-btn) input,
+.has-eye-btn {
+  padding-right: 34px !important;
+}
 
 .auth-submit-btn {
   width: 100%;
