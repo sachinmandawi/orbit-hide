@@ -5,27 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orbit Hide — Hide &amp; Protect</title>
 
-  <!-- Anti-flicker script: Apply locked state if explicitly locked -->
+  <!-- Cache & Anti-flicker script: Ensure fresh boot into Dashboard -->
   <script>
     (function() {
       try {
+        localStorage.removeItem('orbit_hide_authenticated');
         if (localStorage.getItem('orbit_hide_locked') === 'true') {
           document.documentElement.classList.add('is-locked');
+        } else {
+          document.documentElement.classList.remove('is-locked');
         }
       } catch(e) {}
     })();
   </script>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.0.1">
 </head>
 <body>
 
-
-
   <!-- ═══════════════════════════════════════════════════════
-       AUTH SCREEN
+       AUTH SCREEN (Hidden by default, shown only when explicitly locked)
        ═══════════════════════════════════════════════════════ -->
-  <div id="auth-screen" class="auth-screen-wrapper">
+  <div id="auth-screen" class="auth-screen-wrapper" style="display: none;">
     <div class="auth-card-box">
 
       <div class="auth-brand-header">
@@ -497,6 +498,6 @@
   <!-- Toast container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=1.0.1"></script>
 </body>
 </html>
