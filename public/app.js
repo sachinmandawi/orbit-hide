@@ -492,7 +492,7 @@ function switchView(view) {
     dashboard: 'Vault Overview',
     hidden:    'Hidden Items',
     logs:      'Security Audit Logs',
-    settings:  'Cloud Sync & Settings'
+    settings:  'Settings'
   };
 
   if (dashContent)     dashContent.style.display     = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
