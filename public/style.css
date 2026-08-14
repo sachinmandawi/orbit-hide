@@ -93,19 +93,18 @@ html:not(.is-locked) #main-app-screen { display: flex  !important; }
   position: fixed;
   inset: 0;
   background-color: var(--bg-primary);
-  background-image: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 70%);
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
 
 .auth-card-box {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
   width: 360px;
-  padding: 28px 28px 24px;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.6);
+  padding: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
 }
