@@ -974,9 +974,9 @@ function showToast(msg, type = 'success') {
   if (!toastContainer) return;
 
   const dots = {
-    success: '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.5);display:inline-block;flex-shrink:0;"></span>',
-    error:   '<span style="width:7px;height:7px;border-radius:50%;background:#ef4444;box-shadow:0 0 6px rgba(239,68,68,0.5);display:inline-block;flex-shrink:0;"></span>',
-    info:    '<span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5);display:inline-block;flex-shrink:0;"></span>'
+    success: '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;flex-shrink:0;"></span>',
+    error:   '<span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;flex-shrink:0;"></span>',
+    info:    '<span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block;flex-shrink:0;"></span>'
   };
   const dot = dots[type] || dots.success;
 

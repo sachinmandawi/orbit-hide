@@ -501,11 +501,9 @@ div:has(> .pwd-eye-btn) input,
   background-color: var(--accent);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(59,130,246,0.25);
 }
 .btn-primary:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  box-shadow: 0 2px 8px rgba(59,130,246,0.35);
 }
 
 .btn-secondary {
@@ -724,14 +722,13 @@ div:has(> .pwd-eye-btn) input,
   font-size: 12px;
   font-weight: 500;
   color: #f1f1f1;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   max-width: 320px;
   opacity: 1;
   transform: translateY(0) scale(1);
   transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
   word-break: break-word;
-  backdrop-filter: blur(12px);
   animation: toastIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -758,7 +755,7 @@ div:has(> .pwd-eye-btn) input,
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   width: 148px;
   padding: 4px;
   z-index: 1000;
@@ -839,7 +836,7 @@ div:has(> .pwd-eye-btn) input,
 }
 
 .red-dot { background-color: #ef4444; }
-.green-dot { background-color: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+.green-dot { background-color: #10b981; }
 
 .form-row-compact {
   display: flex;
