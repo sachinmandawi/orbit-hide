@@ -179,12 +179,12 @@ html:not(.is-locked) #main-app-screen { display: flex  !important; }
   color: var(--text-primary);
   font-size: 13px;
   height: 34px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease;
 }
 .form-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-subtle);
+  box-shadow: none;
 }
 
 .pwd-eye-btn {
@@ -468,7 +468,7 @@ div:has(> .pwd-eye-btn) input,
   outline: none;
   border-color: var(--accent);
   background-color: var(--bg-card);
-  box-shadow: 0 0 0 2px var(--accent-subtle);
+  box-shadow: none;
   width: 240px;
 }
 .search-input::placeholder { color: var(--text-muted); }
