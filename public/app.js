@@ -21,7 +21,6 @@ const $ = id => document.getElementById(id);
 const sidebar            = $('sidebar');
 const collapseSidebarBtn = $('collapse-sidebar-btn');
 const expandSidebarBtn   = $('expand-sidebar-btn');
-const logoutBtn          = $('logout-btn');
 
 const authTitle             = $('auth-screen-title');
 const authDesc              = $('auth-screen-desc');

@@ -47,7 +47,7 @@ if (isSilentHide) {
     }
 
     try {
-      execSync(`attrib +h +s "${clean.replace(/\\+$/, '')}"`, { windowsHide: true });
+      execSync(`attrib +h +s "${clean.replace(/["]/g, '').replace(/\\+$/, '')}"`, { windowsHide: true });
       item.isHidden = true;
     } catch (_) {}
 
@@ -89,7 +89,7 @@ function createWindow() {
     minHeight: 550,
     title: 'Orbit Hide',
     icon: path.join(__dirname, 'build', 'icon.png'),
-    backgroundColor: '#191919',
+    backgroundColor: '#111111',
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
