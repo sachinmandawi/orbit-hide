@@ -104,7 +104,7 @@ html:not(.is-locked) #main-app-screen { display: flex  !important; }
   border-radius: var(--radius-md);
   width: 360px;
   padding: 28px 24px 22px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
 }
