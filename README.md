@@ -21,6 +21,27 @@
 
 </div>
 
+## 📸 Screenshots
+
+<div align="center">
+
+### 🗂️ Vault Overview Dashboard
+![Vault Overview](screenshots/01_Vault_Overview_Dashboard.png)
+
+</div>
+
+<br>
+
+| 👁️ Hidden Items View | 🔑 Password & Security |
+| :---: | :---: |
+| ![Hidden Items](screenshots/02_Hidden_Items_View.png) | ![Password & Security](screenshots/03_Password_and_Security_Settings.png) |
+
+<br>
+
+| 📋 Security Audit Logs | ☁️ Encrypted GitHub Cloud Sync |
+| :---: | :---: |
+| ![Audit Logs](screenshots/04_Security_Audit_Logs.png) | ![GitHub Cloud Sync](screenshots/05_GitHub_Cloud_Sync.png) |
+
 ---
 
 ## 🌟 Key Features
