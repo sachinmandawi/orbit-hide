@@ -261,7 +261,7 @@ function switchAuthTab(mode) {
   tabCreateBtn && tabCreateBtn.classList.toggle('active', isCreate);
 
   if (authTitle) {
-    if (isSignin)   authTitle.textContent = 'Sign In to Orbit Hide';
+    if (isSignin)   authTitle.textContent = 'Unlock Orbit Hide';
     if (isCreate)   authTitle.textContent = 'Create Master Key';
     if (isRecovery) authTitle.textContent = 'Reset Master Key';
   }
@@ -272,7 +272,7 @@ function switchAuthTab(mode) {
     if (isRecovery) authDesc.textContent = 'Answer security questions to reset your master key.';
   }
 
-  if (authSubmitBtn)          authSubmitBtn.textContent = isSignin ? 'Sign In & Unlock Vault' : 'Create Master Key';
+  if (authSubmitBtn)          authSubmitBtn.textContent = isSignin ? 'Unlock Vault' : 'Create Master Key';
   if (confirmPwdGroup)        confirmPwdGroup.style.display = isCreate ? 'block' : 'none';
   if (secQuestionsSetupGroup) secQuestionsSetupGroup.style.display = isCreate ? 'block' : 'none';
 
