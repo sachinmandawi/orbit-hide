@@ -1,8 +1,9 @@
 {
   "name": "orbit-hide",
   "version": "1.0.0",
-  "description": "Notion Dark Theme Windows Security Vault",
-  "author": "Orbit Hide",
+  "description": "Instant Windows File & Folder Protection Vault",
+  "author": "Sachin Mandawi (Orbit Hide)",
+  "license": "MIT",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
