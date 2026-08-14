@@ -1,11 +1,11 @@
-# Orbit Hide — Stealth Windows File & Folder Protection
+# Orbit Hide — Instant Windows File & Folder Protection
 
 <div align="center">
 
   <img src="public/logo.png" alt="Orbit Hide Logo" width="100" height="100">
 
   # 🛡️ ORBIT HIDE
-  **Ultra-Fast, Zero Data-Loss Stealth Hiding for Windows Files & Folders**
+  **Ultra-Fast, Zero Data-Loss Protection & Hiding for Windows Files & Folders**
 
   [![Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
   [![Security](https://img.shields.io/badge/Security-PBKDF2--SHA512-success?style=for-the-badge&logo=securityScorecard&logoColor=white)](https://github.com/sachinmandawi/orbit-hide)
