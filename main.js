@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
@@ -95,6 +95,12 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false
     }
+  });
+
+  // Open external links in default browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    try { shell.openExternal(url); } catch (_) {}
+    return { action: 'deny' };
   });
 
   loadAppWithRetry(15);

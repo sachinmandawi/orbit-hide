@@ -521,24 +521,27 @@ function switchView(view) {
     el.classList.toggle('active', el.getAttribute('data-view') === view);
   });
 
-  const dashContent     = $('view-dashboard-content');
-  const logsContent     = $('view-logs-content');
-  const securityContent = $('view-security-content');
-  const settingsContent = $('view-settings-content');
-  const heading         = $('view-heading');
+  const dashContent      = $('view-dashboard-content');
+  const logsContent      = $('view-logs-content');
+  const securityContent  = $('view-security-content');
+  const settingsContent  = $('view-settings-content');
+  const developerContent = $('view-developer-content');
+  const heading          = $('view-heading');
 
   const labels = {
     dashboard: 'Vault Overview',
     hidden:    'Hidden Items',
     logs:      'Security Audit Logs',
     security:  'Password & Security',
-    settings:  'GitHub Sync'
+    settings:  'GitHub Sync',
+    developer: 'Developer Support & Feedback'
   };
 
-  if (dashContent)     dashContent.style.display     = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
-  if (logsContent)     logsContent.style.display     = (view === 'logs') ? 'block' : 'none';
-  if (securityContent) securityContent.style.display = (view === 'security') ? 'block' : 'none';
-  if (settingsContent) settingsContent.style.display = (view === 'settings') ? 'block' : 'none';
+  if (dashContent)      dashContent.style.display      = (view === 'dashboard' || view === 'hidden') ? 'block' : 'none';
+  if (logsContent)      logsContent.style.display      = (view === 'logs') ? 'block' : 'none';
+  if (securityContent)  securityContent.style.display  = (view === 'security') ? 'block' : 'none';
+  if (settingsContent)  settingsContent.style.display  = (view === 'settings') ? 'block' : 'none';
+  if (developerContent) developerContent.style.display = (view === 'developer') ? 'block' : 'none';
 
   if (heading && labels[view]) heading.textContent = labels[view];
 
@@ -1000,3 +1003,19 @@ function esc(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+// Open developer links via Electron shell if available
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#dev-email-btn, #dev-profile-btn, #dev-repo-btn, #cloud-repo-link').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const url = btn.getAttribute('href');
+      if (url && url !== '#' && typeof window !== 'undefined' && window.require) {
+        try {
+          const { shell } = window.require('electron');
+          shell.openExternal(url);
+          e.preventDefault();
+        } catch (_) {}
+      }
+    });
+  });
+});

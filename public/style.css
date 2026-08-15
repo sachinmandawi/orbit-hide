@@ -958,3 +958,108 @@ input:checked + .toggle-slider:before {
   margin-top: 10px;
   margin-bottom: 16px;
 }
+
+/* ── Developer Support & Feedback View ────────────────────────────── */
+.developer-support-card {
+  padding: 24px 28px;
+  border-radius: var(--radius-lg, 12px);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.developer-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 18px;
+}
+
+.developer-icon-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md, 8px);
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.developer-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.developer-card-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 3px 0 0 0;
+}
+
+.developer-card-subtitle strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.developer-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.developer-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-dev-gmail {
+  background-color: var(--accent);
+  color: #ffffff !important;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md, 6px);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-dev-gmail:hover {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-dev-github {
+  background-color: var(--bg-sidebar);
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 6px);
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+}
+
+.btn-dev-github:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--text-muted);
+}
